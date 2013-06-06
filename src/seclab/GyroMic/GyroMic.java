@@ -71,8 +71,9 @@ public class GyroMic extends Activity {
 		long currentTime = System.currentTimeMillis();
 		long elapsedTime = currentTime - m_startTime;
 		Log.i(TAG, "Number of Gyroscope events: " + m_numGyroUpdates + ", Elapsed time: " + elapsedTime);
+		m_printWriter.flush();
 	}
-    
+	
 	private LocationListener onLocationChange = new LocationListener() {
 		public void onLocationChanged(Location loc) {
 			Log.d(TAG, "Received location update");
@@ -108,8 +109,8 @@ public class GyroMic extends Activity {
 		@Override
 			synchronized public void onSensorChanged(SensorEvent event) {
 				++m_numGyroUpdates;
-				// Log.d(TAG, "Gyro update");
-				m_printWriter.println(event.values[0] + " " + event.values[1] + " " + event.values[2]);
+				// Log.d(TAG, "Gyroscope update");
+				m_printWriter.println(event.timestamp + " " + event.values[0] + " " + event.values[1] + " " + event.values[2]);
 			}
 	};
 
