@@ -5,18 +5,19 @@
 # > easy_install pyadb
 
 import pyadb
+import sys
 from time import sleep
 import os
+import os.path
 import datetime
+from optparse import OptionParser
 
 ADB_PATH = '~/Documents/Sookasa/adt-bundle-mac-x86_64/sdk/platform-tools/adb'
 APP_NAME = 'seclab.GyroMic'
 ACTIVITY_NAME = '%s.GyroMic' % APP_NAME
 APP_PATH = 'App/bin/GyroMic-debug.apk'
 
-LOCAL_PLAYBACK_WAV_FILE = 'samples/chirp-120-160hz.wav'
 RECORDED_SAMPLES_FILE = '/sdcard/gyro_samples.txt'
-LOCAL_FILENAME = 'chirp-120-160hz'
 RESULTS_PARENT_DIR= 'gyro_results/Nexus4/'
 RUN_APP_COMMAND = 'am start -W -n %s/%s' % (APP_NAME, ACTIVITY_NAME)
 CLOSE_APP_COMMAND = 'am broadcast -a %s.intent.action.SHUTDOWN' % (APP_NAME)
@@ -31,7 +32,20 @@ def play(audio_file):
 	import subprocess
 	return_code = subprocess.call(["afplay", audio_file])
 
+def get_local_filename(playback_filename):
+	return os.path.basename(os.path.splitext(playback_filename)[0])
+
 def main():
+	parser = OptionParser()
+	parser.add_option("-r", "--reinstall", dest="reinstall",	
+		help="Reinstall application on devices")
+	(options, args) = parser.parse_args()
+
+	if len(args) < 1:
+		sys.exit('Not enough arguments. Specify audio file.')
+
+	playback_filename = args[0]
+
 	adb = pyadb.ADB(ADB_PATH)
 	devices = adb.get_devices()[1]
 	print 'Available devices:', devices
@@ -45,17 +59,16 @@ def main():
 			os.mkdir(parent_dir)
 
 		# Uninstall previously installed package and install new one
-		reinstall_app(adb, APP_NAME, keepdata= True)
+		if options.reinstall:
+			reinstall_app(adb, APP_NAME, keepdata= True)
 
 		# Run app
 		print 'Running app (%s)' % RUN_APP_COMMAND
 		print adb.shell_command(RUN_APP_COMMAND)
 
 	print 'Waiting...'
-	sleep(2)
 
-	play(LOCAL_PLAYBACK_WAV_FILE)
-	sleep(1)
+	play(playback_filename)
 
 	for device in devices:
 		adb.set_target_device(device)
@@ -65,9 +78,10 @@ def main():
 	for device in devices:
 		adb.set_target_device(device)
 		# Download recorded file
-		print 'Downloading samples file...'
+		local_filename = get_local_filename(playback_filename)
+		print 'Downloading samples file to ' + local_filename
 		adb.get_remote_file(RECORDED_SAMPLES_FILE, 
-				RESULTS_PARENT_DIR + '%s/%s' % (device, LOCAL_FILENAME))
+				RESULTS_PARENT_DIR + '%s/%s' % (device, local_filename))
 
 if __name__ == '__main__':
 	main()
