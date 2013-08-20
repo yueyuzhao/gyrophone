@@ -48,8 +48,10 @@ public class GyroMic extends Activity {
 		}
 
 		// Get Location Provider
+		/*
 		m_locMgr = (LocationManager) getSystemService(LOCATION_SERVICE);
 		Log.i(TAG, "Started location service");
+		*/
 
 		m_sensorMgr = (SensorManager) getSystemService(SENSOR_SERVICE);
 		m_gyroscope = m_sensorMgr.getDefaultSensor(Sensor.TYPE_GYROSCOPE); // Sensor.TYPE_ALL
@@ -57,7 +59,8 @@ public class GyroMic extends Activity {
 
 	@Override protected void onResume() {
 		super.onResume();
-		m_locMgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 10000.0f, onLocationChange);
+
+		// m_locMgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 10000.0f, onLocationChange);
 
 		m_startTime = System.currentTimeMillis();
 		m_numGyroUpdates = 0;
@@ -66,7 +69,7 @@ public class GyroMic extends Activity {
 
 	@Override protected void onPause() {
 		super.onPause();
-		m_locMgr.removeUpdates(onLocationChange);
+		// m_locMgr.removeUpdates(onLocationChange);
 		m_sensorMgr.unregisterListener(onSensorChange);
 		long currentTime = System.currentTimeMillis();
 		long elapsedTime = currentTime - m_startTime;
