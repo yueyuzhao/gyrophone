@@ -10,18 +10,21 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
-import android.location.LocationManager;
+// import android.location.LocationManager;
 import android.location.LocationListener;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.io.File;
 
 public class GyroMic extends Activity {
 
 	final private String TAG = "GyroMic";
 	private TextView m_status;
-	private LocationManager m_locMgr;
+	// private LocationManager m_locMgr;
 	private SensorManager m_sensorMgr;
 	private Sensor m_gyroscope;
 	private int m_numGyroUpdates;
@@ -55,7 +58,17 @@ public class GyroMic extends Activity {
 
 		m_sensorMgr = (SensorManager) getSystemService(SENSOR_SERVICE);
 		m_gyroscope = m_sensorMgr.getDefaultSensor(Sensor.TYPE_GYROSCOPE); // Sensor.TYPE_ALL
-	}
+
+		// register a shutdown intent handler
+		BroadcastReceiver receiver = new BroadcastReceiver() {
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				finish();
+			}
+		};
+
+		registerReceiver(receiver, new IntentFilter("seclab.GyroMic.intent.action.SHUTDOWN"));
+	} // end of onCreate
 
 	@Override protected void onResume() {
 		super.onResume();
@@ -77,6 +90,7 @@ public class GyroMic extends Activity {
 		m_printWriter.flush();
 	}
 	
+	@SuppressWarnings("unused")
 	private LocationListener onLocationChange = new LocationListener() {
 		public void onLocationChanged(Location loc) {
 			Log.d(TAG, "Received location update");
