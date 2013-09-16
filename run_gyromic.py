@@ -18,7 +18,7 @@ ACTIVITY_NAME = '%s.GyroMic' % APP_NAME
 APP_PATH = 'App/bin/GyroMic-debug.apk'
 
 RECORDED_SAMPLES_FILE = '/sdcard/gyro_samples.txt'
-RESULTS_PARENT_DIR= 'gyro_results/Nexus4/'
+RESULTS_PARENT_DIR= 'gyro_results/Nexus/'
 RUN_APP_COMMAND = 'am start -W -n %s/%s' % (APP_NAME, ACTIVITY_NAME)
 CLOSE_APP_COMMAND = 'am broadcast -a %s.intent.action.SHUTDOWN' % (APP_NAME)
 
@@ -68,6 +68,7 @@ def main():
 
 	print 'Waiting...'
 
+	sleep(1)
 	play(playback_filename)
 
 	for device in devices:
