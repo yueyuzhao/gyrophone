@@ -22,6 +22,10 @@ function [time, freq] = time_analysis(samples, fs, window, overlap)
         freq(end+1) = find_max_freq(sample_window, fs);
         pos = pos + step;
     end;
+    
+    if nargout < 2
+        plot(time, freq)
+    end;
 end
 
 function max_freq = find_max_freq(samples, fs)
