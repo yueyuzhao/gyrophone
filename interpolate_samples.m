@@ -1,5 +1,7 @@
 function [new_timestamps, new_samples] = interpolate_samples(timestamps, samples)
     % filter duplicate timestamps
+    timestamps = timestamps(:);
+    samples = samples(:);
     [timestamps, ind] = unique(timestamps);
     samples = samples(ind, :);
     

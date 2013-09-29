@@ -1,8 +1,22 @@
-function [merged_signals] = merge_signals(sig1, sig2, offset1, offset2, n)
+function [merged_timestamps, merged_signals] = ...
+    merge_signals(sig, offset)
     % Merge two signals sample-by-sample given the samples and offsets
-
-    timestamps1 = offset1:n:offset1+length(sig1)*n - 1;
-    timestamps2 = offset2:n:offset2+length(sig2)*n - 1;
-    [~, merged_signals] = merge_samples(timestamps1, sig1, ...
-        timestamps2, sig2);
+    
+    num_signals = length(sig);
+    timestamps = cell(num_signals, 1);
+    for i = 1:length(sig)
+        timestamps{i} = offset(i):offset(i)+length(sig{i}) - 1;
+    end
+    
+    if num_signals == 2
+        [merged_timestamps, merged_signals] = ...
+            merge_samples(timestamps{1}, sig{1}, ...
+                          timestamps{2}, sig{2});
+    elseif length(sig) == 4
+        [merged_timestamps, merged_signals] = ...
+            merge_samples4(timestamps{1}, sig{1}, ...
+                           timestamps{2}, sig{2}, ...
+                           timestamps{3}, sig{3}, ...
+                           timestamps{4}, sig{4});
+    end
 end

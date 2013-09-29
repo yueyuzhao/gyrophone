@@ -1,5 +1,5 @@
 function plot_spectrums(filename, fs, flt)
-    nfft = 64;
+    nfft = 128;
     [~, samples] = read_samples_file(filename);
     if exist('flt', 'var')
         samples = flt(samples);
