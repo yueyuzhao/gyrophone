@@ -47,6 +47,7 @@ original_signal_name = 'triang-50-100_100-200hz';
 MAX_SHIFT = 10;
 shift_range = -MAX_SHIFT:MAX_SHIFT;
 score = zeros(length(shift_range));
+progressbar('Finding maximum correlation...');
 for d1 = shift_range
     for d2 = shift_range
         shift_offset = [d1; d2];
@@ -54,14 +55,18 @@ for d1 = shift_range
             merge_sensor_data(timestamps, gyro, offset + shift_offset, GYRO_FS);
         gyro_merged = normalization(gyro_merged);
         max_corr = max(xcorr(gyro_merged, orig_sig_ds));
-        score(d1 + MAX_SHIFT + 1, d2 + MAX_SHIFT + 1) = max_corr; 
+        score(d1 + MAX_SHIFT + 1, d2 + MAX_SHIFT + 1) = max_corr;
+        progressbar(((d1 + MAX_SHIFT) * length(shift_range) + (d2 + MAX_SHIFT)) / length(score(:)));
     end;
 end;
+progressbar(1); % close progress bar
 
 % pick best score and merge according to the corresponding offset shift
 [~, max_score_ind] = max(score(:));
 display(max_score_ind);
-offset_shift = ind2sub(size(score), max_score_ind) - [MAX_SHIFT+1,MAX_SHIFT+1];
+[d1, d2] = ind2sub(size(score), max_score_ind);
+offset_shift = [d1; d2] - [MAX_SHIFT+1; MAX_SHIFT+1];
+display(offset_shift);
 [~, gyro_merged, merged_fs] = ...
             merge_sensor_data(timestamps, gyro, offset + offset_shift, GYRO_FS);
 gyro_merged = normalization(gyro_merged);
