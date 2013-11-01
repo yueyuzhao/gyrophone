@@ -1,3 +1,4 @@
 function [normalized_sig] = normalization(x)
-    normalized_sig = (x - mean(x)) / std(x);
+    zeromean = x - mean(x);
+    normalized_sig = zeromean / std(zeromean);
 end

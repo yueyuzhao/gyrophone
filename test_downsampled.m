@@ -1,41 +1,107 @@
-%% Test with downsampled signals
-clear;
-close all;
+function [offset, original, reconstructed] = test_downsampled
+% Test non-uniform reconstruction with downsampled signals
 % [original, fs] = audioread('samples/chirp-120-160hz.wav');
 [original, fs] = audioread('samples/goodbye.wav');
-original = resample(original, 8000, fs);
-fs = 8000;
-soundsc(original, fs);
+
+NUM_DEVICES = 4;
+global GYRO_FS;
+GYRO_FS = 200;
+
+USE_ORIGINAL_OFFSET = true;
+
+original = resample(original, GYRO_FS * NUM_DEVICES, fs);
+
+fs = GYRO_FS * NUM_DEVICES;
+
+% Using generated test signal
+% original = gen_test_signal(fs/2-100, fs, 500);
+
+playsound(original, fs);
 fft_plot(original, fs);
 title('Original signal');
 
-GYRO_FS = 200;
-% GYRO_FS = fs / 2;
-n = floor(fs / GYRO_FS);
-offset = 10; % the offset between the two gyro recordings
+gyro = cell(NUM_DEVICES, 1);
+estimated_offset = zeros(1, NUM_DEVICES);
 
-gyro_1 = (downsample(original, n));
-gyro_2 = (downsample(original(1+offset:end), n));
-gyro_3 = (downsample(original(1+2*offset:end), n));
-gyro_4 = (downsample(original(1+3*offset:end), n));
+% Generate random offsets
+original_offset = gen_random_offset(100, NUM_DEVICES, fs);
+% original_offset = 1:NUM_DEVICES;
+display(original_offset);
 
-gyro_merged_13 = merge_signals(gyro_1, gyro_3, 1, 2, n);
-gyro_merged_24 = merge_signals(gyro_2, gyro_4, 1, 2, n);
-gyro_merged = merge_signals(gyro_merged_13, gyro_merged_24, 1, 2, n);
-merged_fs = GYRO_FS * 4;
+N0 = 0; % noise PSD
+
+% Downsampling with random offset - simulate time-interleaved ADCs
+for i=1:NUM_DEVICES
+    gyro{i} = downsample(original(original_offset(i):end), NUM_DEVICES);
+    % We don't use normalization in the simulation, in case of a synthetic 
+    % generated signal one of the DCs can sample only 0-s which
+    % we don't want to normalize. Also, there is no need since
+    % we sample the signal without simulating attenuation.
+    gyro{i} = gyro{i} + N0*randn(size(gyro{i}));
+end
+
+for i=1:NUM_DEVICES
+    estimated_offset(i) = find_offset(gyro{i}, GYRO_FS, original, fs);
+end
+display(estimated_offset);
+
+%% Find time-skews
+if USE_ORIGINAL_OFFSET
+    offset = original_offset - min(original_offset);
+else
+    offset = estimated_offset - min(estimated_offset);
+end
+time_skew = offset_to_timeskew(offset, NUM_DEVICES, fs);
+display(time_skew);
+
+gyro = trim_signals(gyro, offset);
+
+[reconstructed, merged_fs] = eldar_reconstruction(GYRO_FS, gyro, time_skew);
+% [gyro_merged, merged_fs] = papoulis_reconstruction(GYRO_FS, gyro, time_skew);
+% gyro_merged = interleave_vectors(gyro);
+% merged_fs = NUM_DEVICES * GYRO_FS;
 
 figure;
-fft_plot(gyro_merged, merged_fs);
-title('Merged from two recordings');
+fft_plot(reconstructed, merged_fs);
+title('Merged from recordings');
+playsound(reconstructed, fs);
 
-gyro_resampled = resample(gyro_merged, fs, merged_fs);
-figure;
-fft_plot(gyro_resampled, fs);
-title('After resampling');
+% figure;
+% plot(xcorr(reconstructed, original));
 
-filtered = hp_filt(gyro_resampled);
-figure;
-fft_plot(filtered, fs);
-title('Filtered low frequencies');
+% lp = fir1(48, [0.2 0.95]);
+% filtered = filter(lp, 1, gyro_merged);
+% figure;
+% fft_plot(filtered, merged_fs);
+% title('Filtered');
+% playsound(filtered, merged_fs);
 
-soundsc(filtered, fs);
+end
+
+function playsound(samples, fs)
+    PLAY_SOUNDS = true;
+    MIN_SR = 1000;
+    if PLAY_SOUNDS
+        if (fs < MIN_SR)
+            resampled = resample(samples, MIN_SR, fs);
+            soundsc(resampled, MIN_SR);
+        else
+            soundsc(samples, fs);
+        end
+        pause;
+    end
+end
+
+function test_signal = gen_test_signal(f, fs, timelen)
+    t = 0:timelen;
+    test_signal = sin(2*pi*f/fs*t);
+end
+
+function offset = gen_random_offset(MAX_OFFSET, NUM_DEVICES, fs)
+    offset = randi([1, MAX_OFFSET], [1 NUM_DEVICES]);
+    time_skew = offset_to_timeskew(offset, NUM_DEVICES, fs);
+    while length(unique(time_skew)) ~= NUM_DEVICES
+        offset = randi([1, MAX_OFFSET], [1 NUM_DEVICES]);
+        time_skew = offset_to_timeskew(offset, NUM_DEVICES, fs);
+    end
+end
