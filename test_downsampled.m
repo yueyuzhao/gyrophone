@@ -7,7 +7,8 @@ NUM_DEVICES = 4;
 global GYRO_FS;
 GYRO_FS = 200;
 
-USE_ORIGINAL_OFFSET = true;
+USE_ORIGINAL_OFFSET = false;
+REFINE_OFFSET = true;
 
 original = resample(original, GYRO_FS * NUM_DEVICES, fs);
 
@@ -24,7 +25,7 @@ gyro = cell(NUM_DEVICES, 1);
 estimated_offset = zeros(1, NUM_DEVICES);
 
 % Generate random offsets
-original_offset = gen_random_offset(100, NUM_DEVICES, fs);
+original_offset = gen_random_offset(50, NUM_DEVICES, fs);
 % original_offset = 1:NUM_DEVICES;
 display(original_offset);
 
@@ -51,18 +52,47 @@ if USE_ORIGINAL_OFFSET
 else
     offset = estimated_offset - min(estimated_offset);
 end
+offset = offset - min(offset);
+
+if REFINE_OFFSET
+    % find the shift in offset for which we get the 
+    % maximum correlation with the original signal
+    MAX_SHIFT = 10;
+    shift_range = -MAX_SHIFT:MAX_SHIFT;
+    if NUM_DEVICES == 4
+        possible_shift_offsets = combvec(shift_range, shift_range, shift_range)';
+    elseif NUM_DEVICES == 2
+        possible_shift_offsets = combvec(shift_range)';
+    end;
+    score = zeros(size(possible_shift_offsets, 1), 1);
+    progressbar;
+    for i = 1:length(score)
+        shift_offset = [possible_shift_offsets(i, :) 0];
+        new_offset = offset + shift_offset;
+        time_skew = offset_to_timeskew(new_offset, NUM_DEVICES, fs);
+        trimmed = trim_signals(gyro, new_offset);
+        [reconstructed, ~] = eldar_reconstruction(GYRO_FS, trimmed, time_skew);
+        reconstructed = normalization(reconstructed);
+        max_corr = max(xcorr(reconstructed, original));
+        score(i) = max_corr;
+        progressbar(i / length(score));
+    end;
+    progressbar(1); % close progress bar
+    % pick best score and merge according to the corresponding offset shift
+    [~, max_score_ind] = max(score);
+    offset_shift = [possible_shift_offsets(max_score_ind, :) 0];
+    offset = offset + offset_shift;
+    display(offset_shift);
+end
+
 time_skew = offset_to_timeskew(offset, NUM_DEVICES, fs);
 display(time_skew);
+trimmed = trim_signals(gyro, offset);
 
-gyro = trim_signals(gyro, offset);
-
-[reconstructed, merged_fs] = eldar_reconstruction(GYRO_FS, gyro, time_skew);
-% [gyro_merged, merged_fs] = papoulis_reconstruction(GYRO_FS, gyro, time_skew);
-% gyro_merged = interleave_vectors(gyro);
-% merged_fs = NUM_DEVICES * GYRO_FS;
+[reconstructed, reconstructed_fs] = eldar_reconstruction(GYRO_FS, trimmed, time_skew);
 
 figure;
-fft_plot(reconstructed, merged_fs);
+fft_plot(reconstructed, reconstructed_fs);
 title('Merged from recordings');
 playsound(reconstructed, fs);
 
@@ -76,20 +106,6 @@ playsound(reconstructed, fs);
 % title('Filtered');
 % playsound(filtered, merged_fs);
 
-end
-
-function playsound(samples, fs)
-    PLAY_SOUNDS = true;
-    MIN_SR = 1000;
-    if PLAY_SOUNDS
-        if (fs < MIN_SR)
-            resampled = resample(samples, MIN_SR, fs);
-            soundsc(resampled, MIN_SR);
-        else
-            soundsc(samples, fs);
-        end
-        pause;
-    end
 end
 
 function test_signal = gen_test_signal(f, fs, timelen)
