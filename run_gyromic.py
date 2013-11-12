@@ -19,16 +19,19 @@ APP_PATH = 'App/bin/GyroMic-debug.apk'
 
 RECORDED_SAMPLES_FILE = '/sdcard/gyro_samples.txt'
 RESULTS_PARENT_DIR= 'gyro_results/Nexus/'
+# RESULTS_PARENT_DIR= 'gyro_results/SCPD-Room/'
 RUN_APP_COMMAND = 'am start -W -n %s/%s' % (APP_NAME, ACTIVITY_NAME)
 CLOSE_APP_COMMAND = 'am broadcast -a %s.intent.action.SHUTDOWN' % (APP_NAME)
 
 def reinstall_app(adb, app_name, keepdata):
-		print 'Uninstalling previously installed app...'
-		print adb.uninstall(app_name, keepdata)
-		print 'Installing new app version...'
-		print adb.install(pkgapp=APP_PATH)
+	"Reinstall an application with option of keeping the data"
+	print 'Uninstalling previously installed app...'
+	print adb.uninstall(app_name, keepdata)
+	print 'Installing new app version...'
+	print adb.install(pkgapp=APP_PATH)
 
 def play(audio_file):
+	"Playback audio file using afplay command line utility"
 	import subprocess
 	return_code = subprocess.call(["afplay", audio_file])
 
@@ -45,6 +48,9 @@ def main():
 		sys.exit('Not enough arguments. Specify audio file.')
 
 	playback_filename = args[0]
+
+	# Run one time to make sure we don't get the success message next time
+	os.system(ADB_PATH + ' devices')
 
 	adb = pyadb.ADB(ADB_PATH)
 	devices = adb.get_devices()[1]
@@ -71,6 +77,7 @@ def main():
 	sleep(1)
 	play(playback_filename)
 
+	# Close app and stop recording on all devices
 	for device in devices:
 		adb.set_target_device(device)
 		print 'Closing app (%s)' % CLOSE_APP_COMMAND
@@ -80,7 +87,7 @@ def main():
 		adb.set_target_device(device)
 		# Download recorded file
 		local_filename = get_local_filename(playback_filename)
-		print 'Downloading samples file to ' + local_filename
+		print 'Downloading samples file to %s/%s/%s' % (RESULTS_PARENT_DIR, device, local_filename)
 		adb.get_remote_file(RECORDED_SAMPLES_FILE, 
 				RESULTS_PARENT_DIR + '%s/%s' % (device, local_filename))
 
