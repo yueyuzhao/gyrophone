@@ -6,7 +6,7 @@ function offset = refine_offset(fs, offset, max_shift, num_devices, inputs, ref_
     shift_range = -max_shift:max_shift;
     if num_devices == 4
         possible_shift_offsets = combvec(shift_range, shift_range, shift_range)';
-    elseif num_device == 2
+    elseif num_devices == 2
         possible_shift_offsets = combvec(shift_range)';
     end;
     score = zeros(size(possible_shift_offsets, 1), 1);
