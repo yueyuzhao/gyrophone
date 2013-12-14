@@ -18,7 +18,7 @@ ACTIVITY_NAME = '%s.GyroMic' % APP_NAME
 APP_PATH = 'App/bin/GyroMic-debug.apk'
 
 RECORDED_SAMPLES_FILE = '/sdcard/gyro_samples.txt'
-RESULTS_PARENT_DIR= 'gyro_results/Nexus/'
+RESULTS_PARENT_DIR= 'gyro_results/Nexus/tidigits'
 # RESULTS_PARENT_DIR= 'gyro_results/SCPD-Room/'
 RUN_APP_COMMAND = 'am start -W -n %s/%s' % (APP_NAME, ACTIVITY_NAME)
 CLOSE_APP_COMMAND = 'am broadcast -a %s.intent.action.SHUTDOWN' % (APP_NAME)
@@ -38,16 +38,8 @@ def play(audio_file):
 def get_local_filename(playback_filename):
 	return os.path.basename(os.path.splitext(playback_filename)[0])
 
-def main():
-	parser = OptionParser()
-	parser.add_option("-r", "--reinstall", dest="reinstall",	
-		help="Reinstall application on devices")
-	(options, args) = parser.parse_args()
-
-	if len(args) < 1:
-		sys.exit('Not enough arguments. Specify audio file.')
-
-	playback_filename = args[0]
+def play_and_record(playback_filename, reinstall, results_parent_dir=RESULTS_PARENT_DIR):
+	"Do all the stuff"
 
 	# Run one time to make sure we don't get the success message next time
 	os.system(ADB_PATH + ' devices')
@@ -60,12 +52,12 @@ def main():
 		print 'Recording frequency response for device %s' % device
 		adb.set_target_device(device)
 
-		parent_dir = RESULTS_PARENT_DIR + device
+		parent_dir = results_parent_dir + device
 		if not os.path.exists(parent_dir):
 			os.mkdir(parent_dir)
 
 		# Uninstall previously installed package and install new one
-		if options.reinstall:
+		if reinstall:
 			reinstall_app(adb, APP_NAME, keepdata= True)
 
 		# Run app
@@ -90,6 +82,21 @@ def main():
 		print 'Downloading samples file to %s/%s/%s' % (RESULTS_PARENT_DIR, device, local_filename)
 		adb.get_remote_file(RECORDED_SAMPLES_FILE, 
 				RESULTS_PARENT_DIR + '%s/%s' % (device, local_filename))
+
+
+def main():
+	parser = OptionParser("""Usage: %prog [--reinstall] <wav_file>
+	-r, --reinstall : Reinstalls the GyroMic application on connected devices""")
+	parser.add_option("-r", "--reinstall", dest="reinstall",	
+		help="Reinstall application on devices")
+	(options, args) = parser.parse_args()
+
+	if len(args) < 1:
+		parser.error('Not enough arguments. Specify audio file.')
+
+	playback_filename = args[0]
+	play_and_record(playback_filename, options.reinstall)
+
 
 if __name__ == '__main__':
 	main()
