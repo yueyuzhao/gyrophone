@@ -1,0 +1,1 @@
+"\\piano\Data\DataBases\Speech\NTIMIT\disk1\NTIMIT"

@@ -1,0 +1,1 @@
+"\\piano\Data\DataBases\Speech\CTIMIT\LIB\DATA"
