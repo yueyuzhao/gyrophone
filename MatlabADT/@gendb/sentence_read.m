@@ -16,10 +16,10 @@ function [data smpr found] = sentence_read(db,index)
             found=1;
             [data smpr]= mp3read(path);
         end;
-				if strcmp('gyr', db.format)
-					found = 1;
-					[timestamps, data] = read_samples_file(path);
-					smpr = 200; % Gyro sampling rate
+        if strcmp('gyr', db.format)
+			found = 1;
+			[timestamps, data] = read_samples_file(path);
+			smpr = 200; % Gyro sampling rate
         end;
     else
         fprintf('file not found:error 1\n');        
