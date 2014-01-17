@@ -3,18 +3,26 @@ function [train, train_labels, test, test_labels] = test_svm_classifier
 
 TRAIN_DIR = 'temp/train';
 TEST_DIR = 'temp/test';
-LABEL_IND = [1];
+LABEL_IND = [5];
 
-NUM_OF_COEFFS = 5;
 USE_PCA = false;
+NUM_OF_COEFFS = 5;
 
 [train_obj, train_features] = get_files_and_features(TRAIN_DIR, LABEL_IND);
 [test_obj, test_features] = get_files_and_features(TEST_DIR, LABEL_IND);
 
-train = [train_features.mfcc.Mean' train_features.mfcc.Std' train_features.centroid.Mean' train_features.centroid.Std'];
+% Remove NaNs from cells
+test_features.mfcc_delta.Std = remove_nans_from_cell(test_features.mfcc_delta.Std);
+test_features.mfcc_delta.Mean = remove_nans_from_cell(test_features.mfcc_delta.Mean);
+
+train = [train_features.mfcc.Mean' train_features.mfcc.Std' train_features.mfcc_delta.Mean' train_features.mfcc_delta.Std' ...
+         train_features.centroid.Mean' train_features.centroid.Std' ...
+         train_features.rms.Mean' train_features.rms.Std'];
 train_labels = get(train_obj, 'Label')';
 
-test = [test_features.mfcc.Mean' test_features.mfcc.Std' test_features.centroid.Mean' test_features.centroid.Std'];
+test = [test_features.mfcc.Mean' test_features.mfcc.Std' test_features.mfcc_delta.Mean' test_features.mfcc_delta.Std' ...
+        test_features.centroid.Mean' test_features.centroid.Std' ...
+        test_features.rms.Mean' test_features.rms.Std'];
 test_labels = get(test_obj, 'Label')';
 
 save features train train_labels test test_labels;
@@ -42,9 +50,18 @@ correct = strcmp(c, test_labels);
 correct_rate = sum(correct)/length(correct);
 display(correct_rate);
 
-result = mirclassify(train_obj, {mfcc(train_obj), mfcc(train_obj, 'Delta'), centroid(train_obj)}, ...
-    test_obj, {mfcc(test_obj), mfcc(test_obj, 'Delta'), centroid(test_obj)});
+% classify using MIR
+result = mirclassify(train_obj, {train_features.mfcc.Mean, train_features.mfcc.Std, train_features.centroid.Mean, train_features.centroid.Std}, ...
+    test_obj, {test_features.mfcc.Mean, test_features.mfcc.Std, test_features.centroid.Mean, test_features.centroid.Std});
+display(get(result, 'Correct'));
 
+end
+
+function without_nans = remove_nans_from_cell(c)
+    without_nans = c;
+    len = length(c{1});
+    without_nans(cellfun(@(x) all(isnan(x)), without_nans)) = mat2cell(zeros(len, 1));
+    without_nans = cell2mat(without_nans);
 end
 
 function [audio_obj, features] = get_files_and_features(dir, l)
@@ -56,8 +73,12 @@ function [audio_obj, features] = get_files_and_features(dir, l)
     features = struct();
     mfcc = mirmfcc(audio_obj, 'Frame');
     features.mfcc = mirstat(mfcc);
+    mfcc_delta = mirmfcc(audio_obj, 'Frame', 'Delta');
+    features.mfcc_delta = mirstat(mfcc_delta);
     centroid = mircentroid(audio_obj, 'Frame');
     features.centroid = mirstat(centroid);
+    rms = mirrms(audio_obj, 'Frame');
+    features.rms = mirstat(rms);
     cd(current_dir);
 end
 
