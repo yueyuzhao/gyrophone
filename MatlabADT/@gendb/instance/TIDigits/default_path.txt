@@ -1,1 +1,1 @@
-"/Users/yanmichalevsky/Dropbox/Stanford/DanBoneh/GyroMic/TIDIGITS-Wav"
+"/Users/yanmichalevsky/Dropbox/Stanford/DanBoneh/GyroMic/data//TIDIGITS-Wav"

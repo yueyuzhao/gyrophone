@@ -1,9 +1,9 @@
 function score = get_score_for_potential_speaker(feature_vector, ...
     mu, sigma, c)
-    cd ../../utils/GMM_files
+    cd +GMM/GMMImpl
     [IYM IY] = lmultigauss(feature_vector, mu, sigma, c);
+    cd ../..
     score = IY;
-    cd ../../matlab/gmm
     
 %     sz = size(sigma);
 %     sigma = reshape(sigma, [1 sz]);

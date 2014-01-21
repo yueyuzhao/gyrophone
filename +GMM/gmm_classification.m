@@ -1,4 +1,4 @@
-function class = gmm_classification(xtrain, ytrain, xtest, speakers_ids, mu_train, sigma_train, c_train)
+function class = gmm_classification(xtest, mu_train, sigma_train, c_train)
     % Classify new points in the 'xtest' set using GMM matching
     % Each column in xtest represents a point to be classified.
     % Each column in xtrain contains a training sample.
@@ -10,9 +10,9 @@ function class = gmm_classification(xtrain, ytrain, xtest, speakers_ids, mu_trai
 %         gmm_training(xtrain, ytrain, NUM_OF_GAUSSIANS, NUM_OF_ITERATIONS);
     
     NUM_OF_TEST_SAMPLES = size(xtest, 2);
-    ind = zeros(NUM_OF_TEST_SAMPLES, 1);
+    class = zeros(NUM_OF_TEST_SAMPLES, 1);
     for k = 1:NUM_OF_TEST_SAMPLES
-        [ind(k), score] = gmm_classify_sample(mu_train, sigma_train, c_train, xtest(:, k));        
+        [class(k), score] = GMM.gmm_classify_sample(mu_train, sigma_train, ...
+            c_train, xtest(:, k));        
     end;
-    class = speakers_ids(ind)';
 end

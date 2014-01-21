@@ -53,8 +53,8 @@ if (size(x, 2)==2)
 end
 
 % Window length and step (in seconds):
-win = 0.030; % originally 0.050 (changed by Yan)
-step = 0.030; % originally 0.050
+win = 0.010; % originally 0.050 (changed by Yan)
+step = 0.010; % originally 0.050
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %  THRESHOLD ESTIMATION
@@ -68,8 +68,9 @@ Cor = silence_removal.SpectralCentroid(x, win*fs, step*fs, fs);
 
 % Apply median filtering in the feature sequences (twice), using 5 windows:
 % (i.e., 250 mseconds)
-E = medfilt1(Eor, 5); E = medfilt1(E, 5);
-C = medfilt1(Cor, 5); C = medfilt1(C, 5);
+NUM_WINDOWS = 15;
+E = medfilt1(Eor, NUM_WINDOWS); E = medfilt1(E, NUM_WINDOWS);
+C = medfilt1(Cor, NUM_WINDOWS); C = medfilt1(C, NUM_WINDOWS);
 
 % Get the average values of the smoothed feature sequences:
 E_mean = mean(E);
