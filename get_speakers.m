@@ -4,7 +4,7 @@ function speakers = get_speakers(db)
     
     for k = 1:NUM_OF_ENTRIES
         metadata = getmeta(db, k);
-        speakers{k} = metadata.speaker;
+        speakers{k} = [metadata.speaker];
     end;
     
     [speakers, m] = unique(speakers);

@@ -31,7 +31,10 @@ function [ db ] = gendb( name )
   end
   
   if( ~exist([instancePath '/datafile.mat'], 'file'))           
-      db = bulidDatabase(db,enterie,1);  
+      db = bulidDatabase(db,enterie,1);
+      if strfind(name, 'tidigits')
+          db = fixdigits(db);
+      end
       save([instancePath '/datafile'],'db');
      
   else

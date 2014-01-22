@@ -1,14 +1,14 @@
+function convert_gyro_records_to_wav(input_dir, output_dir)
 % Convert gyro recordings to WAV files
-INPUT_DIR = 'gyro_results/Nexus/tidigits/04dc22d4dad7e4ce';
-files = dir(INPUT_DIR);
-OUTPUT_DIR = 'wav';
+files = dir(input_dir);
 GYRO_FS = 200;
 
 for i = 1:length(files)
-    if files(i).isdir
+    if files(i).isdir || files(i).name(1) == '.'
+        % skip directories and hidden files
         continue;
     end
     
-    filename = [INPUT_DIR '/' files(i).name];
-    gyro_record_to_wav(filename, OUTPUT_DIR, GYRO_FS);
+    filename = [input_dir '/' files(i).name];
+    gyro_record_to_wav(filename, output_dir, GYRO_FS);
 end

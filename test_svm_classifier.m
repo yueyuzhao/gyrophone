@@ -3,7 +3,7 @@ function [train, train_labels, test, test_labels] = test_svm_classifier
 
 TRAIN_DIR = 'temp/train';
 TEST_DIR = 'temp/test';
-LABEL_IND = [5];
+LABEL_IND = [1];
 
 USE_PCA = false;
 NUM_OF_COEFFS = 5;
@@ -12,8 +12,8 @@ NUM_OF_COEFFS = 5;
 [test_obj, test_features] = get_files_and_features(TEST_DIR, LABEL_IND);
 
 % Remove NaNs from cells
-test_features.mfcc_delta.Std = remove_nans_from_cell(test_features.mfcc_delta.Std);
-test_features.mfcc_delta.Mean = remove_nans_from_cell(test_features.mfcc_delta.Mean);
+%test_features.mfcc_delta.Std = remove_nans_from_cell(test_features.mfcc_delta.Std);
+%test_features.mfcc_delta.Mean = remove_nans_from_cell(test_features.mfcc_delta.Mean);
 
 train = [train_features.mfcc.Mean' train_features.mfcc.Std' train_features.mfcc_delta.Mean' train_features.mfcc_delta.Std' ...
          train_features.centroid.Mean' train_features.centroid.Std' ...
@@ -68,7 +68,7 @@ function [audio_obj, features] = get_files_and_features(dir, l)
     current_dir = cd();
     cd(dir);
     % label according to l-th character in file name
-    audio_obj = miraudio('Folder', 'Label', l, 'Trim', 'Normal');
+    audio_obj = miraudio('Folder', 'Label', l, 'Normal');
 %     features = mirfeatures('Folder', 'Stat');
     features = struct();
     mfcc = mirmfcc(audio_obj, 'Frame');
