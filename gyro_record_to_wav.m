@@ -7,10 +7,16 @@ function gyro_record_to_wav(input_file, output_dir, fs)
        [~, name, ~] = fileparts(input_file);
        output_file = [output_dir '/' num2str(i) '/' name  '.wav'];
        y = samples(:, i);
-%        SR = 200;
-%        resampled = resample(y, SR, fs);
-%        audiowrite(output_file, resampled, SR);
-       audiowrite(output_file, y, fs);
-       trim_silence(output_file, output_file);
+       SR = 8000;
+       wavdata = resample(y, SR, fs);
+       
+       % cut 0.5 second at the beginning and a second from the end
+       wavdata = wavdata(4000:end-8000);
+       
+       % trim silence
+       [wavdata, nseg] = get_voiced_segments(wavdata, SR);
+       
+       % Write file
+       audiowrite(output_file, wavdata, SR);
     end
 end

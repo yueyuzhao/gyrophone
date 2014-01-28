@@ -1,5 +1,6 @@
 function convert_gyro_records_to_wav(input_dir, output_dir)
 % Convert gyro recordings to WAV files
+% Works for small TIDigits sample set
 files = dir(input_dir);
 GYRO_FS = 200;
 
