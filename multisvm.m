@@ -16,7 +16,16 @@ result = zeros(length(TestSet(:,1)),1);
 for k=1:numClasses
     %Vectorized statement that binarizes Group
     %where 1 is the current class and 0 is all other classes
-    G1vAll=strcmp(GroupTrain, u(k));
+    t = whos('u');
+    if strcmp(t.class, 'cell')
+        t = u{1};
+        t = whos('t');
+    end
+    if strcmp('char', t.class)
+        G1vAll = strcmp(GroupTrain, u(k));
+    else
+        G1vAll = GroupTrain == u(k);
+    end
     models(k) = svmtrain(TrainingSet,G1vAll);
 end
 
