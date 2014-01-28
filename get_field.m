@@ -7,5 +7,5 @@ function field_values = get_field(db, field_name)
         field_values{k} = metadata.(field_name);
     end;
     
-    [field_values, ~] = unique(speakers);
+    [field_values, ~] = unique(field_values);
 end
