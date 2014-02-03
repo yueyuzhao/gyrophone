@@ -15,32 +15,12 @@ function test_with_dtw
     class = cell(size(test_labels));
     for i = 1:length(test_labels)
         sample = test_features{i};
-        class{i} = classify_sample(sample, train_features, train_labels);
+        class{i} = dtw_classify_sample(sample, train_features, train_labels);
     end
     
     correct = strcmp(class, test_labels);
     correct_rate = sum(correct)/length(correct);
     display(correct_rate);
-end
-
-function class = classify_sample(sample, train_data, train_labels)
-    u = unique(train_labels);
-    N = length(train_data);
-    d = zeros(length(u), 1);
-    for i = 1:N
-        ind = strcmp(u, train_labels{i});
-        d(ind) = d(ind) + get_dtw_distance(sample, train_data{i});
-    end
-    
-    [min_d, class] = min(d);
-    class = u(class);
-    class = class{1};
-end
-
-function d = get_dtw_distance(d1, d2)
-    SM = simmx(abs(d1), abs(d2));
-    [~, ~, D] = dpfast(1-SM);
-    d = D(size(D,1), size(D,2));
 end
 
 function [audio_obj, features] = get_files_and_features(dir, l)
