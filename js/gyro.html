@@ -30,36 +30,36 @@
       // Check for support for DeviceMotion events
       if(window.DeviceMotionEvent) {
       window.addEventListener('devicemotion', function(event) {
-				counter += 1;
+					counter += 1;
 
-				if (counter % 100 == 0) {
-					var d=new Date();
-					var t=d.getTime(); 
-					if (last_time != 0) {
+					if (counter % 100 == 0) {
+						var d=new Date();
+						var t=d.getTime(); 
+						if (last_time != 0) {
 						delta = t - last_time; //in msec
 						rate = 100.0*1000/delta;
-					}	
-					last_time = t;
+						}	
+						last_time = t;
 
-					var x = event.accelerationIncludingGravity.x;
-					var y = event.accelerationIncludingGravity.y;
-					var z = event.accelerationIncludingGravity.z;
-					var r = event.rotationRate;
-					var html = 'Acceleration:<br />';
-					html += 'x: ' + x +'<br />y: ' + y + '<br/>z: ' + z+ '<br />';
-					html += 'Rotation rate:<br />';
-					if(r!=null) {
-						html += 'alpha: ' + r.alpha +'<br />beta: ' + r.beta + '<br/>gamma: ' + r.gamma + '<br />';
-					} 
-					else {
-						html += 'No Rotation Data! <br />';
+						var x = event.accelerationIncludingGravity.x;
+						var y = event.accelerationIncludingGravity.y;
+						var z = event.accelerationIncludingGravity.z;
+						var r = event.rotationRate;
+						var html = 'Acceleration:<br />';
+						html += 'x: ' + x +'<br />y: ' + y + '<br/>z: ' + z+ '<br />';
+						html += 'Rotation rate:<br />';
+						if(r!=null) {
+							html += 'alpha: ' + r.alpha +'<br />beta: ' + r.beta + '<br/>gamma: ' + r.gamma + '<br />';
+						} 
+						else {
+							html += 'No Rotation Data! <br />';
+						}
+						html += 'Reported update interval (samples per sec): ' + event.interval + '<br />';
+						html += 'Calculated update interval (samples per sec): ' + rate + '<br />';
+						dataContainerMotion.innerHTML = html;                  
 					}
-					html += 'Reported update interval (samples per sec): ' + event.interval + '<br />';
-					html += 'Calculated update interval (samples per sec): ' + rate + '<br />';
-					dataContainerMotion.innerHTML = html;                  
-				}
-              });
-      }
+				});
+			}
     }   
     </script>
   
