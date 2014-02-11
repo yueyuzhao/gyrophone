@@ -1,75 +1,109 @@
 
 <!-- saved from url=(0053)http://www.cs.technion.ac.il/~gnakibly/gyro/gyro.html -->
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><style id="clearly_highlighting_css" type="text/css">/* selection */ html.clearly_highlighting_enabled ::-moz-selection { background: rgba(246, 238, 150, 0.99); } html.clearly_highlighting_enabled ::selection { background: rgba(246, 238, 150, 0.99); } /* cursor */ html.clearly_highlighting_enabled {    /* cursor and hot-spot position -- requires a default cursor, after the URL one */    cursor: url("chrome-extension://pioclpoplcdbaefihamjohnefbikjilc/clearly/images/highlight--cursor.png") 14 16, text; } /* highlight tag */ em.clearly_highlight_element {    font-style: inherit !important; font-weight: inherit !important;    background-image: url("chrome-extension://pioclpoplcdbaefihamjohnefbikjilc/clearly/images/highlight--yellow.png");    background-repeat: repeat-x; background-position: top left; background-size: 100% 100%; } /* the delete-buttons are positioned relative to this */ em.clearly_highlight_element.clearly_highlight_first { position: relative; } /* delete buttons */ em.clearly_highlight_element a.clearly_highlight_delete_element {    display: none; cursor: pointer;    padding: 0; margin: 0; line-height: 0;    position: absolute; width: 34px; height: 34px; left: -17px; top: -17px;    background-image: url("chrome-extension://pioclpoplcdbaefihamjohnefbikjilc/clearly/images/highlight--delete-sprite.png"); background-repeat: no-repeat; background-position: 0px 0px; } em.clearly_highlight_element a.clearly_highlight_delete_element:hover { background-position: -34px 0px; } /* retina */ @media (min--moz-device-pixel-ratio: 2), (-webkit-min-device-pixel-ratio: 2), (min-device-pixel-ratio: 2) {    em.clearly_highlight_element { background-image: url("chrome-extension://pioclpoplcdbaefihamjohnefbikjilc/clearly/images/highlight--yellow@2x.png"); }    em.clearly_highlight_element a.clearly_highlight_delete_element { background-image: url("chrome-extension://pioclpoplcdbaefihamjohnefbikjilc/clearly/images/highlight--delete-sprite@2x.png"); background-size: 68px 34px; } } </style><style type="text/css"></style><style>[touch-action="none"]{ -ms-touch-action: none; touch-action: none; }[touch-action="pan-x"]{ -ms-touch-action: pan-x; touch-action: pan-x; }[touch-action="pan-y"]{ -ms-touch-action: pan-y; touch-action: pan-y; }[touch-action="scroll"],[touch-action="pan-x pan-y"],[touch-action="pan-y pan-x"]{ -ms-touch-action: pan-x pan-y; touch-action: pan-x pan-y; }</style></head><body onload="init()"><doctype html="">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><style type="text/css"></style><style id="clearly_highlighting_css" type="text/css">/* selection */ html.clearly_highlighting_enabled ::-moz-selection { background: rgba(246, 238, 150, 0.99); } html.clearly_highlighting_enabled ::selection { background: rgba(246, 238, 150, 0.99); } /* cursor */ html.clearly_highlighting_enabled {    /* cursor and hot-spot position -- requires a default cursor, after the URL one */    cursor: url("chrome-extension://pioclpoplcdbaefihamjohnefbikjilc/clearly/images/highlight--cursor.png") 14 16, text; } /* highlight tag */ em.clearly_highlight_element {    font-style: inherit !important; font-weight: inherit !important;    background-image: url("chrome-extension://pioclpoplcdbaefihamjohnefbikjilc/clearly/images/highlight--yellow.png");    background-repeat: repeat-x; background-position: top left; background-size: 100% 100%; } /* the delete-buttons are positioned relative to this */ em.clearly_highlight_element.clearly_highlight_first { position: relative; } /* delete buttons */ em.clearly_highlight_element a.clearly_highlight_delete_element {    display: none; cursor: pointer;    padding: 0; margin: 0; line-height: 0;    position: absolute; width: 34px; height: 34px; left: -17px; top: -17px;    background-image: url("chrome-extension://pioclpoplcdbaefihamjohnefbikjilc/clearly/images/highlight--delete-sprite.png"); background-repeat: no-repeat; background-position: 0px 0px; } em.clearly_highlight_element a.clearly_highlight_delete_element:hover { background-position: -34px 0px; } /* retina */ @media (min--moz-device-pixel-ratio: 2), (-webkit-min-device-pixel-ratio: 2), (min-device-pixel-ratio: 2) {    em.clearly_highlight_element { background-image: url("chrome-extension://pioclpoplcdbaefihamjohnefbikjilc/clearly/images/highlight--yellow@2x.png"); }    em.clearly_highlight_element a.clearly_highlight_delete_element { background-image: url("chrome-extension://pioclpoplcdbaefihamjohnefbikjilc/clearly/images/highlight--delete-sprite@2x.png"); background-size: 68px 34px; } } </style><style>[touch-action="none"]{ -ms-touch-action: none; touch-action: none; }[touch-action="pan-x"]{ -ms-touch-action: pan-x; touch-action: pan-x; }[touch-action="pan-y"]{ -ms-touch-action: pan-y; touch-action: pan-y; }[touch-action="scroll"],[touch-action="pan-x pan-y"],[touch-action="pan-y pan-x"]{ -ms-touch-action: pan-x pan-y; touch-action: pan-x pan-y; }</style></head><body><doctype html="">
 
   
     <script>
 	var counter = 0;
 	var last_time = 0;
 	var rate = 0.0;
-    function init() {
-      //Find our div containers in the DOM
-      var dataContainerOrientation = document.getElementById('dataContainerOrientation');
+	var content = "";
+	function motionlistener(event) {
+		var d=new Date();
+		var t=d.getTime(); 
+		var r = event.rotationRate;
+
+		if (counter % 100 == 0) {
+			if (last_time != 0) {
+				delta = t - last_time; //in msec
+				rate = 100.0*1000/delta;
+			}	
+			last_time = t;
+
+			html = 'Rotation rate:<br />';
+			html += 'alpha: ' + r.alpha +'<br />beta: ' + r.beta + '<br/>gamma: ' + r.gamma + '<br />';
+			html += 'Reported update interval (msec): ' + event.interval + '<br />';
+			html += 'Calculated rate (samples per sec): ' + rate + '<br />';
+			dataContainerMotion.innerHTML = html;  
+
+		}
+
+		counter += 1;
+
+//        var x = event.accelerationIncludingGravity.x;
+//        var y = event.accelerationIncludingGravity.y;
+//        var z = event.accelerationIncludingGravity.z;
+//        var html = 'Acceleration:<br />';
+//        html += 'x: ' + x +'<br />y: ' + y + '<br/>z: ' + z+ '<br />';
+//        html += 'Rotation rate:<br />';
+
+		if(r!=null) {
+			content += (t + '\t' + r.alpha + '\t' + r.beta + '\t' + r.gamma + '\n');
+		}
+		else {
+			html += 'No Rotation Data! <br />';
+		}
+	}		
+	
+	function init() {
+		console.log('Start recording samples...');
+     //Find our div containers in the DOM
+      //var dataContainerOrientation = document.getElementById('dataContainerOrientation');
       var dataContainerMotion = document.getElementById('dataContainerMotion');
+	  var btn = document.getElementById('action');
+	  btn.innerHTML = "Save";
+	  btn.onclick = save;
  
       //Check for support for DeviceOrientation event
-	  /*
-      if(window.DeviceOrientationEvent) {
-        window.addEventListener('deviceorientation', function(event) {
-                var alpha = event.alpha;
-                var beta = event.beta;
-                var gamma = event.gamma;
- 
-                if(alpha!=null || beta!=null || gamma!=null) {
-					dataContainerOrientation.innerHTML = 'alpha: ' + alpha + '<br/>beta: ' + beta + '<br />gamma: ' + gamma;
-				}
-              }, false);
-      }
-	  */
+      //if(window.DeviceOrientationEvent) {
+      //  window.addEventListener('deviceorientation', function(event) {
+      //          var alpha = event.alpha;
+      //          var beta = event.beta;
+      //          var gamma = event.gamma;
+	  //	
+      //          if(alpha!=null || beta!=null || gamma!=null) 
+      //            dataContainerOrientation.innerHTML = 'alpha: ' + alpha + '<br/>beta: ' + beta + '<br />gamma: ' //+ gamma;
+      //        }, false);
+      //}
  
       // Check for support for DeviceMotion events
       if(window.DeviceMotionEvent) {
-      window.addEventListener('devicemotion', function(event) {
-					counter += 1;
+				window.addEventListener('devicemotion', motionlistener);
+      }
+    }  
+	
+	function save() {
+		var MIME_TYPE = "text/csv";
+		window.removeEventListener('devicemotion', motionlistener);
+		console.log('Saving samples...');
+		var blob = new Blob([content], {type:MIME_TYPE});
+		var dummyLink = document.createElement('a');
+		dummyLink.download = 'gyro.csv';
+		dummyLink.href = window.URL.createObjectURL(blob);
+		dummyLink.textContent = 'Download';
+		dummyLink.dataset.downloadurl = 
+			[MIME_TYPE, dummyLink.download, dummyLink.href].join(':');
 
-					if (counter % 100 == 0) {
-						var d=new Date();
-						var t=d.getTime(); 
-						if (last_time != 0) {
-						delta = t - last_time; //in msec
-						rate = 100.0*1000/delta;
-						}	
-						last_time = t;
+		var body = document.getElementsByTagName('body')[0];
+		body.appendChild(dummyLink);
 
-						var x = event.accelerationIncludingGravity.x;
-						var y = event.accelerationIncludingGravity.y;
-						var z = event.accelerationIncludingGravity.z;
-						var r = event.rotationRate;
-						var html = 'Acceleration:<br />';
-						html += 'x: ' + x +'<br />y: ' + y + '<br/>z: ' + z+ '<br />';
-						html += 'Rotation rate:<br />';
-						if(r!=null) {
-							html += 'alpha: ' + r.alpha +'<br />beta: ' + r.beta + '<br/>gamma: ' + r.gamma + '<br />';
-						} 
-						else {
-							html += 'No Rotation Data! <br />';
-						}
-						html += 'Reported update interval (samples per sec): ' + event.interval + '<br />';
-						html += 'Calculated update interval (samples per sec): ' + rate + '<br />';
-						dataContainerMotion.innerHTML = html;                  
-					}
-				});
-			}
-    }   
-    </script>
+		// var uriContent = "data:test/csv," + encodeURIComponent(content);
+		// var filedl = document.getElementById('filedl');
+		// filedl.src = uriContent;
+	}
+</script>
   
-  	<!--
-    <div id="dataContainerOrientation">
+
+    <!--<div id="dataContainerOrientation">
       No device orientation data
-    </div>
-	-->
+    </div> -->
     <div id="dataContainerMotion">
       No device motion data
     </div>
+	<button id="action" onclick="init()">Start Recording</button>
+	
+	<!--
+	<iframe id="filedl" width="0" height="0"></iframe>
+	-->
   
 </doctype></body></html>
