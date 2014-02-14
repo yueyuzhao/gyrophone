@@ -5,13 +5,13 @@ function [mu_train, sigma_train, c_train] = ...
     NUM_OF_FEATURES = size(feature_matrix, 1);
 
     unique_labels = unique(labels);
-    NUM_OF_SPEAKERS = length(unique_labels);
+    NUM_OF_UNIQUE_LABELS = length(unique_labels);
     
-    mu_train = zeros(NUM_OF_FEATURES, num_of_gaussians, NUM_OF_SPEAKERS);
-    sigma_train = zeros(NUM_OF_FEATURES, num_of_gaussians, NUM_OF_SPEAKERS);
-    c_train = zeros(num_of_gaussians, NUM_OF_SPEAKERS);
+    mu_train = zeros(NUM_OF_FEATURES, num_of_gaussians, NUM_OF_UNIQUE_LABELS);
+    sigma_train = zeros(NUM_OF_FEATURES, num_of_gaussians, NUM_OF_UNIQUE_LABELS);
+    c_train = zeros(num_of_gaussians, NUM_OF_UNIQUE_LABELS);
     
-    for k = 1:NUM_OF_SPEAKERS
+    for k = 1:NUM_OF_UNIQUE_LABELS
         speaker_features = feature_matrix(:, labels == unique_labels(k));
         [mu, sigma, c] = GMM.gmm_estimate_of_speaker(speaker_features, ...
             num_of_gaussians, num_of_iter);

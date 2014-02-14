@@ -1,12 +1,7 @@
-function output = trim_silence(input_filename, output_filename)
-   [output, fs] = silence_removal.detectVoiced(input_filename);
-   fprintf('Detected %d voiced segments\n', length(output));
-   
-   % merge segments
-   wavdata = [];
-   for i = 1:numel(output)
-    wavdata = [wavdata; output{i}];
+function [wavdata, fs] = trim_silence(input_filename, output_filename)
+	 [audio, fs] = audioread(input_filename);
+   [wavdata, nseg] = get_voiced_segments(audio, fs);
+   if nseg > 0
+       audiowrite(output_filename, wavdata, fs);
    end
-   
-   audiowrite(output_filename, wavdata, fs);
 end

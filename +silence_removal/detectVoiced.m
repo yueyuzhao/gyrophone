@@ -41,7 +41,7 @@ step = 0.020; % originally 0.050
 %  THRESHOLD ESTIMATION
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Weight = .5; % used in the threshold estimation method, originally 5
+Weight = 5; % used in the threshold estimation method, originally 5
 
 % Compute short-time energy and spectral centroid of the signal:
 Eor = silence_removal.ShortTimeEnergy(x, win*fs, step*fs);
@@ -79,8 +79,8 @@ end
 % Thresholding:
 Flags1 = (E>=T_E);
 Flags2 = (C>=T_C);
-Flags3 = (E == max(E));
-flags = Flags1 & Flags2 & Flags3;
+% Flags3 = (E == max(E));
+flags = Flags1 & Flags2; % & Flags3;
 
 VERBOSE = nargin==3 && logical(t) == true;
 

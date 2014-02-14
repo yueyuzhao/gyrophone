@@ -1,9 +1,9 @@
-function [train, train_labels, test, test_labels] = test_svm_classifier
+function test_svm_classifier
 % Train an SVM classifier with the reduced TIDIGITS set
 
 TRAIN_DIR = 'temp/train';
 TEST_DIR = 'temp/test';
-LABEL_IND = [1];
+LABEL_IND = [5];
 
 USE_PCA = false;
 NUM_OF_COEFFS = 5;
@@ -25,14 +25,14 @@ test = [test_features.mfcc.Mean' test_features.mfcc.Std' test_features.mfcc_delt
         test_features.rms.Mean' test_features.rms.Std'];
 test_labels = get(test_obj, 'Label')';
 
-save features train train_labels test test_labels;
+% save features train train_labels test test_labels;
 % load features;
 
 if USE_PCA
     [~, train_pcvec] = pca(train);
-    train_pcvec = train_pcvec(:, 1:NUM_OF_COEFFS);
-    train = train * train_pcvec;
-    test = test * train_pcvec;
+    train_pcvec = train_pcvec(1:NUM_OF_COEFFS, :);
+    train = train * train_pcvec';
+    test = test * train_pcvec';
 end
 
 % [s, groups] = train_svm(train, train_labels);

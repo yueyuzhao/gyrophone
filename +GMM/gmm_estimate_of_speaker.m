@@ -1,7 +1,7 @@
 function [mu, sigma, c] = ...
-    gmm_estimate_of_speaker(speaker_features, num_of_gaussians, num_of_iter)
+    gmm_estimate_of_speaker(features, num_of_gaussians, num_of_iter)
     cd +GMM/GMMImpl
-    [mu, sigma, c] = gmm_estimate(speaker_features, num_of_gaussians, num_of_iter);
+    [mu, sigma, c] = gmm_estimate(features, num_of_gaussians, num_of_iter);
     cd ../..
     
 %     obj = gmdistribution.fit(speaker_features', num_of_gaussians, ...
