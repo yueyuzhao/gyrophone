@@ -40,9 +40,11 @@ function [Odb returns] = filter(db,field,value,max_returns)
       
    for ii=1:length(db.enteries)
         if (flip == 0)                
-              res = strncmpi([db.enteries(ii).(field),' '],value,length(value));
+%               res = strncmpi([db.enteries(ii).(field),' '],value,length(value));
+            res = regexpi([db.enteries(ii).(field),' '],value) == 1;
         else        
-              res = ~strncmpi([db.enteries(ii).(field),' '],value,length(value));
+%            res = ~strncmpi([db.enteries(ii).(field),' '],value,length(value));
+            res = ~(regexpi([db.enteries(ii).(field),' '],value) == 1);
         end          
         if res 
               returns = returns + 1;
