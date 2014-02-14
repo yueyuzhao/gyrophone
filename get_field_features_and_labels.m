@@ -7,7 +7,7 @@ function [feature_matrix, labels] = ...
     % feature_matrix - Feature matrix for input to Diffusion Maps
     % labels - Label for each column of feature_matrix
     
-    feature_matrix = [];
+    feature_matrix = {};
     labels = [];
     
     total_entries = 0; % counter of handled entries
@@ -17,45 +17,49 @@ function [feature_matrix, labels] = ...
        unique_field_values = cell2mat(unique_field_values);
        unique_field_values(:, 2) = '*';
        unique_field_values = mat2cell(unique_field_values, ...
-           repmat(1, size(unique_field_values,1), 1));
+           ones(size(unique_field_values,1), 1));
        unique_field_values = unique(unique_field_values);
     end
     
-    NUM_OF_DIGITS = length(unique_field_values);
-    for k = 1:NUM_OF_DIGITS
-        speaker_db = filterdb(db, field_name, unique_field_values{k});
+    progressbar;
+    NUM_OF_UNIQUE_VALUES = length(unique_field_values);
+    for k = 1:NUM_OF_UNIQUE_VALUES
+        filtered_db = filterdb(db, field_name, unique_field_values{k});
         
         % extract features for all speaker samples
-        func = @calc_mfcc;
-        [speaker_features, num_of_success] = extract_features(speaker_db, func);
+        func = @calc_stft;
+        [features, num_of_success] = extract_features(filtered_db, func);
         
-        labels = [labels; ones(num_of_success, 1) * k];
-        feature_matrix = [feature_matrix speaker_features];
+        if num_of_success > 0
+            labels = [labels; ones(num_of_success, 1) * k];
+            feature_matrix = [feature_matrix features];
+            total_entries = total_entries + num_of_success;
+        end
         
-        total_entries = total_entries + num_of_success;
+        progressbar(k/NUM_OF_UNIQUE_VALUES);
     end
     
     fprintf('Handled %d entries\n', total_entries);
 end
 
-function [feature_matrix, num_of_success] = extract_features(db, func)
+function [features, num_of_success] = extract_features(db, func)
 	% db - a database to extract the features from
 	% func - a function that extracts the features for a single database entry
 
-    TRIM_SILENCE = false;
-    GYRO = false;
+    TRIM_SILENCE = true;
+    GYRO = true;
     
     NUM_OF_ENTRIES = length(db);
-	GYRO_DIM = 1;
+	GYRO_DIM = 2;
     FS = 8000;
 	
-    feature_matrix = [];
+    features = {};
 	num_of_success = 0;
     
 	for k = 1:NUM_OF_ENTRIES
 		try
 			[wavdata, samp_rate] = read(db, k);
-			wavdata = wavdata{1};
+			wavdata = (wavdata{1});
             if GYRO
                 wavdata = wavdata(:, GYRO_DIM);
             end
@@ -63,17 +67,30 @@ function [feature_matrix, num_of_success] = extract_features(db, func)
             fs = FS;
             
             if TRIM_SILENCE
+                % cut 0.5 second at the beginning and a second from the end
+                if GYRO
+                    wavdata = wavdata(4000:end-8000);
+                end
                 [wavdata, nseg] = get_voiced_segments(wavdata, fs);
+            else
+                nseg = 1;
             end
 			
-            new_features = func(wavdata, fs);
-			feature_matrix(:, end+1) = new_features;
-			num_of_success = num_of_success + 1;
+            if nseg > 0
+                num_of_success = num_of_success + 1;
+                features{num_of_success} = func(wavdata, fs);
+            end
 		catch ME
 			% print error source
 			ME.stack(1)
 		end
 	end
+end
+
+function features = calc_stft(wavdata, samp_rate)
+    WINDOW = 512;
+    WINDOW_OVERLAP = WINDOW * 0.75;
+    features = specgram(wavdata, WINDOW, samp_rate, WINDOW_OVERLAP);
 end
 
 function mfcc_features = calc_mfcc(wavdata, samp_rate)
