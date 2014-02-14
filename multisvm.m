@@ -1,4 +1,4 @@
-function [result] = multisvm(TrainingSet,GroupTrain,TestSet)
+function [result] = multisvm(TrainingSet,GroupTrain,TestSet,varargin)
 %Models a given training set with a corresponding group vector and 
 %classifies a given test set using an SVM classifier according to a 
 %one vs. all relation. 
@@ -26,7 +26,7 @@ for k=1:numClasses
     else
         G1vAll = GroupTrain == u(k);
     end
-    models(k) = svmtrain(TrainingSet,G1vAll);
+    models(k) = svmtrain(TrainingSet,G1vAll, varargin{:});
 end
 
 %classify test cases
