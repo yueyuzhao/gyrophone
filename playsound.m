@@ -1,5 +1,9 @@
-function playsound(samples, fs)
+function playsound(samples, fs, varargin)
     PLAY_SOUNDS = true;
+    if nargin > 2
+       PLAY_SOUNDS = varargin{1}; 
+    end
+    
     MIN_SR = 1000;
     if PLAY_SOUNDS
         if (fs < MIN_SR)
