@@ -34,7 +34,10 @@ function [audio_obj, features] = get_files_and_features(dir, l)
     for i = 1:length(a)
         WINDOW = 512;
         WINDOW_OVERLAP = WINDOW * 0.75;
-        features{i} = specgram(a{i}, WINDOW, sr{i}, WINDOW_OVERLAP);
+        f = specgram(a{i}, WINDOW, sr{i}, WINDOW_OVERLAP);
+%         f = lpc(a{i});
+%         f = analyze_samples(a{i}, sr{i});
+        features{i} = f;
 %         features{i} = mfcc(a{i}, sr{i}, 512);
     end
     cd(current_dir);
