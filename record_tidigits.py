@@ -25,7 +25,7 @@ def process(input_dir, output_dir, dry, single_digit):
 																		dest_dir)
 
 def main():
-	parser = OptionParser("Usage: %prog [--dry] <input directory> <output_directory>")
+	parser = OptionParser("Usage: %prog [--dry] [--single-digit] <input directory> <output_directory>")
 	parser.add_option('--dry', action="store_true", dest="dry", default=False, 
 										help="Dry run (don't record)")
 	parser.add_option('--single-digit', action="store_true", dest="single_digit", 
