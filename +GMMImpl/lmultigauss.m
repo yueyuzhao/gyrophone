@@ -34,7 +34,7 @@ lcoef=repmat(log(c')-lcoi,[T,1]);
 if DEBUG1 lcoi,lcoef,lY,pause;end
 
 YM=lcoef+lY;            % ( T,M ) one mixture per column
-Y=lsum(YM,2);                 % add mixtures 
+Y=GMMImpl.lsum(YM,2);                 % add mixtures 
 
 if DEBUG [ size(YM) NaN size(Y) ], end
   

@@ -29,12 +29,12 @@ x=(-ft*(xM-xm)+xm):((ft+1)*(xM-xm)./100):(xM+ft*(xM-xm));
 
 subplot(li,co,ll);
 
-histn(X(l,:),300);
+GMMImpl.histn(X(l,:),300);
 hold on;
 
 if DEBUG size(x),end
 
-[laux,lmulti]=lmultigauss(x,mi(l,:),sig(l,:),c);
+[laux,lmulti]=GMMImpl.lmultigauss(x,mi(l,:),sig(l,:),c);
 aux=exp(laux);
 multi=exp(lmulti);
 

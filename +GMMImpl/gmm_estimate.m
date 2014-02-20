@@ -40,13 +40,21 @@ function [mu,sigm,c]=gmm_estimate(X,M,iT,mu,sigm,c,Vm)
 
   % START ITERATATIONS  
   for iter=1:iT
-    if GRAPH graph_gmm(X,mu,sigm,c),pause,end
-    if DEBUG disp(['************ ',num2str(iter),' *********************']);end
+    if GRAPH
+        GMMImpl.graph_gmm(X,mu,sigm,c)
+        pause
+    end
+    if DEBUG
+        disp(['************ ',num2str(iter),' *********************']);
+    end
     
     % ESTIMATION STEP ****************************************************
-    [lBM,lB] = lmultigauss(X,mu,sigm,c);
+    [lBM,lB] = GMMImpl.lmultigauss(X,mu,sigm,c);
     
-    if DEBUG lB,B=exp(lB),pause; end
+    if DEBUG
+        lB,B=exp(lB)
+        pause; 
+    end
  
     LLH=mean(lB);
 
