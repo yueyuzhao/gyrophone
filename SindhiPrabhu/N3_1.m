@@ -37,7 +37,7 @@ delayV = (LF-1)/2;
 
 std = [1e-6 1e-5 1e-4 1e-3 1e-2 1e-1];% 5e-1];%
 serP = zeros(size(std));
-% serE = zeros(size(std));
+serE = zeros(size(std));
 serI = zeros(size(std));
 serV = zeros(size(std));
 serPr = zeros(size(std));
@@ -294,6 +294,7 @@ for p = 1:N
         Fshift = exp(1i*(pi/K1).*kron(rP,w));   % r*w
         Htemp = Fshift*B*A*W*W(:,lemda+1);
         
+%           h = sinc((n*TQ1/T(p))+(lemda/K1)-(taus(p)/T(p))).*conv(sinc((lemda/M(p))-(taus(p)/TQ1)), kaiser(LF,18), 'same');
 %         h = sinc((n*TQ1/T(p))+(lemda/K1)-(taus(p)/T(p))).*knab(LF,18,(lemda/M(p))-(taus(p)/TQ1)).';
         h = sinc((n*TQ1/T(p))+(lemda/K1)-(taus(p)/T(p))).*kaiser_mine1(LF,18,(lemda/M(p))-(taus(p)/TQ1));
         h1 = zeros(2*K1, length(h)+2*K1-1);
@@ -320,161 +321,161 @@ serP(tt) = serP(tt)+20*log10(norm(x,2)/norm(y-x,2));
 % % Generalized Samples 
 % % Authors: Y C Eldar and A V Oppenheim
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% 
-% y = zeros(N,ML*K1);
-% for p = 1:N
-%     tau = taus(p)+(0:ML*M(p)-1)*T(p);
-%     x1 = zeros(1,ML*M(p));
-%     for k = 1:NS
-%         x1 = x1 + Amp(k)*sin(2*pi*Frq(k)*tau+Phi(k));
+
+y = zeros(N,ML*K1);
+for p = 1:N
+    tau = taus(p)+(0:ML*M(p)-1)*T(p);
+    x1 = zeros(1,ML*M(p));
+    for k = 1:NS
+        x1 = x1 + Amp(k)*sin(2*pi*Frq(k)*tau+Phi(k));
+    end;
+
+    y1 = upsample(x1,K1);
+    
+    LFE = M(p)*capM*2*K1+1;  %359,159,239          % min length of LF should be capM*2*K1
+    nE = -(LFE-1)/2:1:(LFE-1)/2;
+    h = sinc((nE/K1)-(taus(p)/T(p))).*kaiser_mine1(LFE,18,-K1*(taus(p)/T(p)));
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%% Implementation 1 %%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     G = M(setdiff((1:N),p));
+%     F = taus(setdiff((1:N),p));
+%     temp1 = G(1)-G(2);
+%     temp2 = G(1)+G(2);
+%     bb = zeros(2*(K-M(p))+1,M(p));
+%     if temp1~=0
+%         for l = 0:M(p)-1
+%             c = 0.5*cos(pi*(l*T(p)*temp1+G(2)*F(2)-G(1)*F(1))/capT);
+%             s = -0.5*sin(pi*(l*T(p)*temp1+G(2)*F(2)-G(1)*F(1))/capT);
+%             bb(1+temp2-temp1,l+1) = 0.5*(c+1i*s);
+%             bb(1+temp2+temp1,l+1) = conj(bb(1+temp2-temp1,l+1));
+%         end;
+%     else
+%         bb(1+temp2,1:M(p)) = 0.5*cos(pi*G(1)*(F(2)-F(1))/capT);
 %     end;
-% 
-%     y1 = upsample(x1,K1);
-%     
-%     LFE = M(p)*capM*2*K1+1;  %359,159,239          % min length of LF should be capM*2*K1
-%     nE = -(LFE-1)/2:1:(LFE-1)/2;
-%     h = sinc((nE/K1)-(taus(p)/T(p))).*kaiser_mine1(LFE,18,-K1*(taus(p)/T(p)));
-% 
-% %%%%%%%%%%%%%%%%%%%%%%%%%%% Implementation 1 %%%%%%%%%%%%%%%%%%%%%%%%%%%
-% %     G = M(setdiff((1:N),p));
-% %     F = taus(setdiff((1:N),p));
-% %     temp1 = G(1)-G(2);
-% %     temp2 = G(1)+G(2);
-% %     bb = zeros(2*(K-M(p))+1,M(p));
-% %     if temp1~=0
-% %         for l = 0:M(p)-1
-% %             c = 0.5*cos(pi*(l*T(p)*temp1+G(2)*F(2)-G(1)*F(1))/capT);
-% %             s = -0.5*sin(pi*(l*T(p)*temp1+G(2)*F(2)-G(1)*F(1))/capT);
-% %             bb(1+temp2-temp1,l+1) = 0.5*(c+1i*s);
-% %             bb(1+temp2+temp1,l+1) = conj(bb(1+temp2-temp1,l+1));
-% %         end;
-% %     else
-% %         bb(1+temp2,1:M(p)) = 0.5*cos(pi*G(1)*(F(2)-F(1))/capT);
-% %     end;
-% %     for l = 0:M(p)-1
-% %         c = -0.5*cos(pi*(l*T(p)*temp2-G(2)*F(2)-G(1)*F(1))/capT);
-% %         s = 0.5*sin(pi*(l*T(p)*temp2-G(2)*F(2)-G(1)*F(1))/capT);
-% %         bb(1+temp2-temp2,l+1) = 0.5*(c+1i*s);
-% %         bb(1+temp2+temp2,l+1) = conj(bb(1+temp2-temp2,l+1));
-% %     end;
-% %     aaa = ones(1,M(p));
-% %     bbvl = zeros(M(p),LFE);
-% %     for l = 1:M(p)
-% %         for q = 1:N
-% %             if q ~= p
-% %                 aaa(l) = aaa(l)*sin(pi*(taus(p)-taus(q)+(l-1)*T(p))/T(q));
-% %             end;
-% %         end;
-% %         bbv = zeros(2*(K-M(p))+1,LFE);
-% %         for v = -(K-M(p)):K-M(p)
-% %             bbv(K-M(p)+1+v,:) = bb(K-M(p)+1+v,l)*exp(1i*(pi/(K1*M(p)))*v*nE);
-% %         end;
-% %         bbvl(l,:) = sum(bbv,1)/aaa(l);
-% %     end;
-% %     bbb = zeros(M(p),LFE);
-% %     bbn = zeros(M(p),LFE);
-% %     for m = 1:M(p)
-% %         for l = 1:M(p)
-% %             bbb(l,:) = bbvl(l,:)*exp(1i*(2*pi/M(p))*(m-1)*(l-1));
-% %         end
-% %         bbb = sum(bbb,1);
-% %         bbn(m,:) = bbb.*exp(1i*(2*pi/M(p))*(m-1)*nE);
-% %     end;
-% %     bbn = sum(bbn,1);
-% %     bbn = bbn.*h/M(p);
-% 
-% %%%%%%%%%%%%%%%%%%%%%%%%%%% Implementation 2 %%%%%%%%%%%%%%%%%%%%%%%%%%%
-% %     G = M(setdiff((1:N),p));
-% %     F = taus(setdiff((1:N),p));
-% %     temp1 = G(1)-G(2);
-% %     temp2 = G(1)+G(2);
-% %     bb = zeros(2*(K-M(p))+1,M(p));
-% %     if temp1~=0
-% %         for l = 0:M(p)-1
-% %             c = 0.5*cos(pi*(l*T(p)*temp1+G(2)*F(2)-G(1)*F(1))/capT);
-% %             s = -0.5*sin(pi*(l*T(p)*temp1+G(2)*F(2)-G(1)*F(1))/capT);
-% %             bb(1+temp2-temp1,l+1) = 0.5*(c+1i*s);
-% %             bb(1+temp2+temp1,l+1) = conj(bb(1+temp2-temp1,l+1));
-% %         end;
-% %     else
-% %         bb(1+temp2,1:M(p)) = 0.5*cos(pi*G(1)*(F(2)-F(1))/capT);
-% %     end;
-% %     for l = 0:M(p)-1
-% %         c = -0.5*cos(pi*(l*T(p)*temp2-G(2)*F(2)-G(1)*F(1))/capT);
-% %         s = 0.5*sin(pi*(l*T(p)*temp2-G(2)*F(2)-G(1)*F(1))/capT);
-% %         bb(1+temp2-temp2,l+1) = 0.5*(c+1i*s);
-% %         bb(1+temp2+temp2,l+1) = conj(bb(1+temp2-temp2,l+1));
-% %     end;
-% %     aaa = ones(1,M(p));
-% %     for l = 1:M(p)
-% %         for q = 1:N
-% %             if q ~= p
-% %                 aaa(l) = aaa(l)/sin(pi*(taus(p)-taus(q)+(l-1)*T(p))/T(q));
-% %             end;
-% %         end;
-% %     end;
-% %     AE = diag(aaa);
-% %     BE = bb.';
-% %     
-% %     dim = K-M(p); w = -dim:1:dim;
-% %     FE = exp(1i*(pi/(K1*M(p))).*kron(nE,w'));
-% % 
-% %     E1E = exp(1i*(2*pi/M(p)).*kron((0:M(p)-1),(0:M(p)-1)'))/M(p);
-% % 
-% %     E2E = exp(1i*(2*pi/M(p)).*kron(nE,(0:M(p)-1)'));
-% % 
-% %     temp = E1E*AE*BE*FE;
-% %     bbn = h.*sum(E2E.*temp,1);
-% 
-% %%%%%%%%%%%%%%%%%%%%%%%%%%% Implementation 3 %%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     for l = 0:M(p)-1
+%         c = -0.5*cos(pi*(l*T(p)*temp2-G(2)*F(2)-G(1)*F(1))/capT);
+%         s = 0.5*sin(pi*(l*T(p)*temp2-G(2)*F(2)-G(1)*F(1))/capT);
+%         bb(1+temp2-temp2,l+1) = 0.5*(c+1i*s);
+%         bb(1+temp2+temp2,l+1) = conj(bb(1+temp2-temp2,l+1));
+%     end;
 %     aaa = ones(1,M(p));
-%     bb = ones(M(p),LFE);
+%     bbvl = zeros(M(p),LFE);
 %     for l = 1:M(p)
 %         for q = 1:N
 %             if q ~= p
 %                 aaa(l) = aaa(l)*sin(pi*(taus(p)-taus(q)+(l-1)*T(p))/T(q));
-%                 bb(l,:) = bb(l,:).*sin(pi*((nE*TQ1/M(p))-taus(q)+(l-1)*T(p))/T(q));
 %             end;
 %         end;
-%         bb(l,:) = bb(l,:)/aaa(l);
+%         bbv = zeros(2*(K-M(p))+1,LFE);
+%         for v = -(K-M(p)):K-M(p)
+%             bbv(K-M(p)+1+v,:) = bb(K-M(p)+1+v,l)*exp(1i*(pi/(K1*M(p)))*v*nE);
+%         end;
+%         bbvl(l,:) = sum(bbv,1)/aaa(l);
 %     end;
-% 
 %     bbb = zeros(M(p),LFE);
 %     bbn = zeros(M(p),LFE);
 %     for m = 1:M(p)
 %         for l = 1:M(p)
-%             bbb(l,:) = bb(l,:)*exp(1i*(2*pi/M(p))*(m-1)*(l-1));
+%             bbb(l,:) = bbvl(l,:)*exp(1i*(2*pi/M(p))*(m-1)*(l-1));
 %         end
 %         bbb = sum(bbb,1);
 %         bbn(m,:) = bbb.*exp(1i*(2*pi/M(p))*(m-1)*nE);
 %     end;
 %     bbn = sum(bbn,1);
 %     bbn = bbn.*h/M(p);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%% Implementation 2 %%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     G = M(setdiff((1:N),p));
+%     F = taus(setdiff((1:N),p));
+%     temp1 = G(1)-G(2);
+%     temp2 = G(1)+G(2);
+%     bb = zeros(2*(K-M(p))+1,M(p));
+%     if temp1~=0
+%         for l = 0:M(p)-1
+%             c = 0.5*cos(pi*(l*T(p)*temp1+G(2)*F(2)-G(1)*F(1))/capT);
+%             s = -0.5*sin(pi*(l*T(p)*temp1+G(2)*F(2)-G(1)*F(1))/capT);
+%             bb(1+temp2-temp1,l+1) = 0.5*(c+1i*s);
+%             bb(1+temp2+temp1,l+1) = conj(bb(1+temp2-temp1,l+1));
+%         end;
+%     else
+%         bb(1+temp2,1:M(p)) = 0.5*cos(pi*G(1)*(F(2)-F(1))/capT);
+%     end;
+%     for l = 0:M(p)-1
+%         c = -0.5*cos(pi*(l*T(p)*temp2-G(2)*F(2)-G(1)*F(1))/capT);
+%         s = 0.5*sin(pi*(l*T(p)*temp2-G(2)*F(2)-G(1)*F(1))/capT);
+%         bb(1+temp2-temp2,l+1) = 0.5*(c+1i*s);
+%         bb(1+temp2+temp2,l+1) = conj(bb(1+temp2-temp2,l+1));
+%     end;
+%     aaa = ones(1,M(p));
+%     for l = 1:M(p)
+%         for q = 1:N
+%             if q ~= p
+%                 aaa(l) = aaa(l)/sin(pi*(taus(p)-taus(q)+(l-1)*T(p))/T(q));
+%             end;
+%         end;
+%     end;
+%     AE = diag(aaa);
+%     BE = bb.';
+%     
+%     dim = K-M(p); w = -dim:1:dim;
+%     FE = exp(1i*(pi/(K1*M(p))).*kron(nE,w'));
 % 
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%     y1 = conv(y1,bbn);
-%     delay = (length(h)-1)/2;
-%     y1 = y1(1+delay:M(p):end-delay);
-%     y(p,:) = y1;
-% end;
-% y = real(sum(y,1));
-% x = inputN;
-% y = y(160:end-60);
-% x = x(160:end-60);
-% serE(tt) = serE(tt)+20*log10(norm(x,2)/norm(y-x,2));
+%     E1E = exp(1i*(2*pi/M(p)).*kron((0:M(p)-1),(0:M(p)-1)'))/M(p);
 % 
-% % % figure();
-% % subplot(2,1,1);
-% % plot(([x' y']));
-% % title('input / output signals');
-% % xlabel('sample');
-% % ylabel('signal value');
-% % grid on;
-% % subplot(2,1,2);
-% % plot((x'-y'));
-% % xlabel('time (sample)');
-% % ylabel('error value');
-% % grid on;
+%     E2E = exp(1i*(2*pi/M(p)).*kron(nE,(0:M(p)-1)'));
+% 
+%     temp = E1E*AE*BE*FE;
+%     bbn = h.*sum(E2E.*temp,1);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%% Implementation 3 %%%%%%%%%%%%%%%%%%%%%%%%%%%
+    aaa = ones(1,M(p));
+    bb = ones(M(p),LFE);
+    for l = 1:M(p)
+        for q = 1:N
+            if q ~= p
+                aaa(l) = aaa(l)*sin(pi*(taus(p)-taus(q)+(l-1)*T(p))/T(q));
+                bb(l,:) = bb(l,:).*sin(pi*((nE*TQ1/M(p))-taus(q)+(l-1)*T(p))/T(q));
+            end;
+        end;
+        bb(l,:) = bb(l,:)/aaa(l);
+    end;
+
+    bbb = zeros(M(p),LFE);
+    bbn = zeros(M(p),LFE);
+    for m = 1:M(p)
+        for l = 1:M(p)
+            bbb(l,:) = bb(l,:)*exp(1i*(2*pi/M(p))*(m-1)*(l-1));
+        end
+        bbb = sum(bbb,1);
+        bbn(m,:) = bbb.*exp(1i*(2*pi/M(p))*(m-1)*nE);
+    end;
+    bbn = sum(bbn,1);
+    bbn = bbn.*h/M(p);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    y1 = conv(y1,bbn);
+    delay = (length(h)-1)/2;
+    y1 = y1(1+delay:M(p):end-delay);
+    y(p,:) = y1;
+end;
+y = real(sum(y,1));
+x = inputN;
+y = y(160:end-60);
+x = x(160:end-60);
+serE(tt) = serE(tt)+20*log10(norm(x,2)/norm(y-x,2));
+
+% % figure();
+% subplot(2,1,1);
+% plot(([x' y']));
+% title('input / output signals');
+% xlabel('sample');
+% ylabel('signal value');
+% grid on;
+% subplot(2,1,2);
+% plot((x'-y'));
+% xlabel('time (sample)');
+% ylabel('error value');
+% grid on;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % A realization of Digital Filter Banks for Reconstruction of Uniformly
@@ -498,7 +499,7 @@ y = zeros(K,size(y1,2));
 for r = 1:K
     y2 = F*b(:,r)*a(r)*y1(r,:);
 %     h = sinc((n/K1)-tausI(r)/capT).*knab(LF,18,-tausI(r)/TQ1).';
-    h = sinc((n/K1)-tausI(r)/capT).*kaiser_mine1(LF,18,-tausI(r)/TQ1);
+    h = sinc((n/K1)-tausI(r)/capT).*conv(sinc(-tausI(r)/TQ1),kaiser(LF,18),'same');
 %     h = sinc((n/K)-tausI(r)/capT).*kaiser_mine1(LF,18,-tausI(r)/TQ);
     for i=1:2*K1
 %     for i=1:2*K
@@ -627,23 +628,23 @@ end
 end
 end
 serP = serP/(MCruns*(MCruns1-aa));
-% serE = serE/(MCruns*(MCruns1-aa));
+serE = serE/(MCruns*(MCruns1-aa));
 serI = serI/(MCruns*(MCruns1-aa));
 serV = serV/(MCruns*(MCruns1-aa));
 serPr = serPr/(MCruns*(MCruns1-aa));
 serJ = serJ/(MCruns*(MCruns1-aa));
 serNO = serNO/(MCruns*(MCruns1-aa));
 
-figure();hold on;
-plot(std,serJ,'kp-','LineWidth',2);
-plot(std,serPr,'ko-','LineWidth',2);
-plot(std,serV,'ks-','LineWidth',2);
-plot(std,serP,'kd-','LineWidth',2);
-plot(std,serI,'k>-','LineWidth',2);
-% plot(std,serE,'k+-','LineWidth',2);
-plot(std,serNO,'k+-','LineWidth',2);
+figure();hold all;
+plot(std,serJ,'p-','LineWidth',2);
+plot(std,serPr,'o-','LineWidth',2);
+plot(std,serV,'s-','LineWidth',2);
+plot(std,serP,'d-','LineWidth',2);
+plot(std,serI,'>-','LineWidth',2);
+plot(std,serE,'+-','LineWidth',2);
+plot(std,serNO,'+-','LineWidth',2);
 % legend('Johansson','Prendergast','Tertinek','Proposed','Itami','Eldar');
-legend('Johansson','Prendergast','Tertinek','Proposed','Itami','W/O Reconst');
+legend('Johansson','Prendergast','Tertinek','Proposed','Itami','Eldar','W/O Reconst');
 xlabel('Standard Deviation (\sigma)','fontsize',14,'fontweight','b');
 ylabel('SNR in dB','fontsize',14,'fontweight','b');
 grid on;box on;
