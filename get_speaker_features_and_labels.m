@@ -27,92 +27,17 @@ function [feature_matrix, labels] = ...
         
         % extract features for all speaker samples
         func = @calc_mfcc;
-        [speaker_features, num_of_success] = extract_features(speaker_db, func);
+%         func = @calc_stft;
+        [features, num_of_success] = extract_features(speaker_db, func);
         
-        labels = [labels; ones(num_of_success, 1) * k];
-        feature_matrix = [feature_matrix speaker_features];
+        if num_of_success > 0
+            labels = [labels; ones(num_of_success, 1) * k];
+            feature_matrix = [feature_matrix features];
+            total_entries = total_entries + num_of_success;
+        end
         
-        total_entries = total_entries + num_of_success;
         progressbar(k/NUM_OF_UNIQUE_VALUES);
     end
     
     fprintf('Handled %d entries\n', total_entries);
-end
-
-function [feature_matrix, num_of_success] = extract_features(db, func)
-	% db - a database to extract the features from
-	% func - a function that extracts the features for a single database entry
-
-    TRIM_SILENCE = true;
-    GYRO = false;
-    
-	feature_matrix = [];
-	num_of_success = 0;
-
-	NUM_OF_ENTRIES = length(db);
-	GYRO_DIM = 1;
-    FS = 8000;
-
-	for k = 1:NUM_OF_ENTRIES
-		try
-			[wavdata, samp_rate] = read(db, k);
-			wavdata = wavdata{1};
-            if GYRO
-                wavdata = wavdata(:, GYRO_DIM);
-            end
-            wavdata = resample(wavdata, FS, samp_rate);
-            fs = FS;
-            
-            if TRIM_SILENCE
-                if GYRO
-                    % cut 0.5 second at the beginning and a second from the end
-                    wavdata = wavdata(4000:end-8000);
-                end
-                [wavdata, nseg] = get_voiced_segments(wavdata, fs);
-            else
-                nseg = 1;
-            end
-			
-            if nseg > 0
-                new_features = func(wavdata, fs);
-                feature_matrix(:, end+1) = new_features;
-                num_of_success = num_of_success + 1;
-            end
-		catch ME
-			% print error source
-			ME.stack(1)
-		end
-	end
-end
-
-function mfcc_features = calc_mfcc(wavdata, samp_rate)
-	% MFCC extraction from samples
-	FRAME_LEN = 512; % 20 ms for sampling rate of 200 Hz
-
-	audio = miraudio(wavdata, samp_rate);
-	frames = mirframe(audio, 'Length', FRAME_LEN, 'sp');
-	frame_mfcc = mirmfcc(frames);
-	mfcc_data = mirgetdata(frame_mfcc);
-	mfcc_features = values_to_features(mfcc_data);
-end
-
-function features = values_to_features(values)
-	% Convert a time-series obtained from a sample to a feature using
-	% different kind of statistics over the values and the derivatives
-
-	mean_val = nanmean(values, 2);
-	variance = nanvar(values, 0, 2);
-	% feature_skewness = skewness(values(~isnan(values)));
-	% feature_kurtosis = kurtosis(values(~isnan(values)));
-
-	abs_delta = abs(values(:, 2:end) - values(:, 1:end-1));
-	mean_delta = nanmean(abs_delta, 2);
-	var_delta = nanvar(abs_delta, 0, 2);
-
-	maximum = max(values, [], 2);
-	minimum = min(values, [], 2);
-
-	features = [mean_val; variance; ... 
-	%           feature_skewness; feature_kurtosis; ...
-                mean_delta; var_delta; maximum; minimum];
 end
