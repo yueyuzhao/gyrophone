@@ -1,13 +1,17 @@
-function test_speaker_identification
+function correct_rate = test_speaker_identification
     % Test speaker identification with TIDIGITS
     NUM_OF_GAUSSIANS = 8;
-%     NUM_OF_ITERATIONS = 20;
+    NUM_OF_ITERATIONS = 20;
     
-    USE_CACHE = false;
+    USE_GMM = true;
+    USE_MULTISVM = false;
     
-    db = gendb('tidigits');
+    USE_CACHE = true;
+    
+    db = gendb('tidigits_gyro');
     db = filterdb(db, 'age', '1-Adults', 'type', 'MAN');
 %     db = filterdb(db, 'device', '0094e779d7d1841f');
+    db = filterdb(db, 'device', '00a697fa469633a5');
     speakers = get_speakers(db);
     
     if USE_CACHE
@@ -19,7 +23,7 @@ function test_speaker_identification
     end
     
     % choose random speakers
-    SPEAKERS_NUM = 10;
+    SPEAKERS_NUM = 5;
     TOTAL_NUM = length(speakers);
     speaker_ids = randperm(TOTAL_NUM);
     speaker_ids = sort(speaker_ids(1:SPEAKERS_NUM));
@@ -39,14 +43,21 @@ function test_speaker_identification
     train_features = features(:, cp.training);
     test_features = features(:, cp.test);
     
-    [mu_train, sigma_train, c_train] = ...
-        GMM.gmm_training(train_features, train_labels, NUM_OF_GAUSSIANS, ...
-                         NUM_OF_ITERATIONS);
-                                  
-    class = GMM.gmm_classification(test_features, mu_train, sigma_train, c_train);
-%     class = multisvm(train_features', train_labels, test_features');
-    class = train_labels(class);
+    if USE_GMM
+        [mu_train, sigma_train, c_train] = ...
+            GMM.gmm_training(train_features, train_labels, NUM_OF_GAUSSIANS, ...
+                             NUM_OF_ITERATIONS);                                  
+        class = GMM.gmm_classification(test_features, mu_train, sigma_train, c_train);
+    end
+    
+    if USE_MULTISVM
+        class = multisvm(train_features', train_labels, test_features', ...
+            'tolkkt', 1e-2, 'kktviolationlevel', 0.1);
+    end
 
+    u = unique(train_labels);
+    class = u(class);
+    
     correct = class == test_labels;
     correct_rate = sum(correct)/length(correct);
     display(correct_rate);

@@ -1,4 +1,4 @@
-function test_svm_classifier
+function correct_rate = test_svm_classifier
 % Train an SVM classifier with the reduced TIDIGITS set
 
 TRAIN_DIR = 'temp/train';
@@ -35,11 +35,13 @@ if USE_PCA
     test = test * train_pcvec';
 end
 
-% [s, groups] = train_svm(train, train_labels);
-% c = classify_svm(s, test, groups);
-c = multisvm(train, train_labels, test);
+% s = svmtrain(train, train_labels);
+% c = svmclassify(s, test);
+c = multisvm(train, train_labels, test, 'tolkkt', 1e-2, 'kktviolationlevel', 0.1);
 u = unique(train_labels);
+display(['Number of unique labels: ' num2str(length(u))]);
 correct = strcmp(u(c), test_labels);
+% correct = strcmp(c, test_labels);
 correct_rate = sum(correct)/length(correct);
 display(correct_rate);
 
@@ -47,8 +49,8 @@ display(correct_rate);
 K = 3; % number of neighbors to use
 c = knnclassify(test, train, train_labels, K);
 correct = strcmp(c, test_labels);
-correct_rate = sum(correct)/length(correct);
-display(correct_rate);
+knn_correct_rate = sum(correct)/length(correct);
+display(knn_correct_rate);
 
 % classify using MIR
 result = mirclassify(train_obj, {train_features.mfcc.Mean, train_features.mfcc.Std, train_features.centroid.Mean, train_features.centroid.Std}, ...

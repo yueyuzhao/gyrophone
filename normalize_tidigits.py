@@ -4,7 +4,6 @@ from optparse import OptionParser
 import run_gyromic
 import os, os.path
 
-WAV_EXT = '.WAV'
 NORMALIZE = '../utils/normalize/src/normalize'
 
 def process(input_dir, dry):

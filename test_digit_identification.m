@@ -1,8 +1,8 @@
 function correct_rate = test_digit_identification
     % Test speaker identification with TIDIGITS
-    USE_CACHE = true;
-    USE_GMM = false;
-    USE_DTW = true;
+    USE_CACHE = false;
+    USE_GMM = true;
+    USE_DTW = false;
     USE_MULTISVM = false;
     USE_BINARYSVM = false;
     
@@ -15,7 +15,7 @@ function correct_rate = test_digit_identification
         % Filter single digit entries
         db = filterdb(db, 'digit', '[1-9OZ][AB]');
 
-%         db = filterdb(db, 'device', '0094e779d7d1841f');
+        db = filterdb(db, 'device', '0094e779d7d1841f');
 %         db = filterdb(db, 'device', '00a697fa469633a5');
         db = filterdb(db, 'type', 'MAN');
         

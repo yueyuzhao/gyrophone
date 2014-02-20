@@ -1,4 +1,4 @@
-function test_with_dtw
+function correct_rate = test_with_dtw
     TRAIN_DIR = 'temp/train';
     TEST_DIR = 'temp/test';
     

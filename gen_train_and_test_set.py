@@ -7,17 +7,21 @@ import os.path
 import shutil
 import random
 import sys
+import fnmatch
+import re
 
-TRAIN_TEST_RATIO = 9
-EXT = '.wav'
+TRAIN_TEST_RATIO = 8
+FILENAME_FILTER = '*.wav'
 
 def main():
 	if len(sys.argv) < 3:
-		sys.exit('Usage: %s <input dir> <output dir>' % sys.argv[0])
+		sys.exit('Usage: %s <input dir> <output dir> <filter>' % sys.argv[0])
 	input_dir = sys.argv[1]
 	output_dir = sys.argv[2]
-	
-	files = [f for f in os.listdir(input_dir) if os.path.splitext(f)[1].lower() == EXT]
+
+	re_filter = fnmatch.translate(FILENAME_FILTER)
+
+	files = [f for f in os.listdir(input_dir) if re.match(re_filter, f)]
 	random.shuffle(files)
 	N = len(files)
 	train_set_size = TRAIN_TEST_RATIO * N / (TRAIN_TEST_RATIO + 1)
