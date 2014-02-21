@@ -15,15 +15,16 @@ T_inp = 1/inp_fs;
 TQ = 1; % Nyquist sampling period
 
 % Decimation Periods - in our case all ADCs sample with the same rate
-T = [2*TQ 2*TQ];
+T = [3*TQ 3*TQ 3*TQ];
 
 K = 0.5*lcm(2*T(1), 2*T(2))/TQ; % number of samples in recurrent period
+K = 0.5*lcm(2*K, 2*T(3))/TQ;
 capT = K*TQ; % the full sampling period - of all samplers
 M = capT./T;
-ML = length(input{1}); % number of slices
+ML = min(cellfun('length', input)); % number of slices
 
 taus = time_skew / T_inp * capT; % ADC delays in seconds
-tausI = sort([taus(1) taus(2) T(1)+taus(1)]);
+tausI = sort([taus(1) taus(2) taus(3)]);
 tauI = zeros(K,ML);
 
 for p = 1:K

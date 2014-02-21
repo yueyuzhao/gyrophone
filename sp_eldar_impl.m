@@ -23,7 +23,7 @@ M = capT./T;
 ML = length(input{1}); % number of slices
 
 taus = time_skew / T_inp * capT; % ADC delays in seconds
-tausI = sort([taus(1) taus(2) T(1)+taus(1)]);
+tausI = sort([taus(1) taus(2)]);
 tauI = zeros(K,ML);
 
 for p = 1:K
