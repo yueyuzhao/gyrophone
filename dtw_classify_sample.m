@@ -24,9 +24,3 @@ function class = dtw_classify_sample(sample, train_data, train_labels)
         class = class{1};
     end
 end
-
-function d = get_dtw_distance(d1, d2)
-    SM = simmx(abs(d1), abs(d2));
-    [~, ~, D] = dpfast(1-SM);
-    d = D(size(D,1), size(D,2));
-end

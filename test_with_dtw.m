@@ -1,10 +1,11 @@
-function correct_rate = test_with_dtw
+function correct_rate = test_with_dtw(label_ind)
     TRAIN_DIR = 'temp/train';
     TEST_DIR = 'temp/test';
+    mirverbose(0);
     
     % LABEL_IND specify the indices of the characters in the filename
     % that are taken as the label for that file
-    LABEL_IND = [5];
+    LABEL_IND = label_ind;
     
     [train_obj, train_features] = get_files_and_features(TRAIN_DIR, LABEL_IND);
     [test_obj, test_features] = get_files_and_features(TEST_DIR, LABEL_IND);
@@ -32,9 +33,7 @@ function [audio_obj, features] = get_files_and_features(dir, l)
     sr = get(audio_obj, 'Sampling');
     features = cell(length(a), 1);
     for i = 1:length(a)
-        WINDOW = 512;
-        WINDOW_OVERLAP = WINDOW * 0.75;
-        f = specgram(a{i}, WINDOW, sr{i}, WINDOW_OVERLAP);
+        f = calc_stft(a{i}, sr{i});
 %         f = lpc(a{i});
 %         f = analyze_samples(a{i}, sr{i});
         features{i} = f;

@@ -15,11 +15,17 @@ FILENAME_FILTER = '*.wav'
 
 def main():
 	if len(sys.argv) < 3:
-		sys.exit('Usage: %s <input dir> <output dir> <filter>' % sys.argv[0])
+		sys.exit('Usage: %s <input dir> <output dir> [filter]' % sys.argv[0])
 	input_dir = sys.argv[1]
 	output_dir = sys.argv[2]
 
-	re_filter = fnmatch.translate(FILENAME_FILTER)
+	if len(sys.argv) >= 4:
+		fn_filter = sys.argv[3]
+	else:
+		fn_filter = FILENAME_FILTER
+	
+	print 'Filename filter:', fn_filter
+	re_filter = fnmatch.translate(fn_filter)
 
 	files = [f for f in os.listdir(input_dir) if re.match(re_filter, f)]
 	random.shuffle(files)

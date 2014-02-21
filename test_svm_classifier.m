@@ -1,9 +1,9 @@
-function correct_rate = test_svm_classifier
+function correct_rate = test_svm_classifier(label_ind)
 % Train an SVM classifier with the reduced TIDIGITS set
 
 TRAIN_DIR = 'temp/train';
 TEST_DIR = 'temp/test';
-LABEL_IND = [5];
+LABEL_IND = label_ind;
 
 USE_PCA = false;
 NUM_OF_COEFFS = 5;
