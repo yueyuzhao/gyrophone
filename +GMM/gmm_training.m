@@ -12,7 +12,13 @@ function [mu_train, sigma_train, c_train] = ...
     c_train = zeros(num_of_gaussians, NUM_OF_UNIQUE_LABELS);
     
     for k = 1:NUM_OF_UNIQUE_LABELS
-        speaker_features = feature_matrix(:, labels == unique_labels(k));
+        t = whos('unique_labels');
+        if strcmp(t.class, 'double')
+            mask = labels == unique_labels(k);
+        else
+            mask = strcmp(labels, unique_labels{k});
+        end
+        speaker_features = feature_matrix(:, mask);
         [mu, sigma, c] = GMM.gmm_estimate_of_speaker(speaker_features, ...
             num_of_gaussians, num_of_iter);
         mu_train(:, :, k) = mu;

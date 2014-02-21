@@ -42,8 +42,19 @@ u = unique(train_labels);
 display(['Number of unique labels: ' num2str(length(u))]);
 correct = strcmp(u(c), test_labels);
 % correct = strcmp(c, test_labels);
-correct_rate = sum(correct)/length(correct);
-display(correct_rate);
+svm_correct_rate = sum(correct)/length(correct);
+display(svm_correct_rate);
+
+% classify using GMM
+NUM_OF_GAUSSIANS = 10;
+NUM_OF_ITERATIONS = 20;
+[mu_train, sigma_train, c_train] = ...
+    GMM.gmm_training(train', train_labels, NUM_OF_GAUSSIANS, ...
+                     NUM_OF_ITERATIONS);                                  
+c = GMM.gmm_classification(test', mu_train, sigma_train, c_train);
+correct = strcmp(u(c), test_labels);
+gmm_correct_rate = sum(correct)/length(correct);
+display(gmm_correct_rate);
 
 % classify using K-NN
 K = 3; % number of neighbors to use
@@ -55,7 +66,11 @@ display(knn_correct_rate);
 % classify using MIR
 result = mirclassify(train_obj, {train_features.mfcc.Mean, train_features.mfcc.Std, train_features.centroid.Mean, train_features.centroid.Std}, ...
     test_obj, {test_features.mfcc.Mean, test_features.mfcc.Std, test_features.centroid.Mean, test_features.centroid.Std});
-display(get(result, 'Correct'));
+mir_correct_rate = get(result, 'Correct');
+display(mir_correct_rate);
+
+correct_rate = [svm_correct_rate, gmm_correct_rate, knn_correct_rate, ...
+    mir_correct_rate]
 
 end
 
