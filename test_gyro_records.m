@@ -2,7 +2,7 @@ function [timestamps, gyro, reconstructed] = ...
     test_gyro_records(sample_name, ref_signal_name)
 % Test with multiple Gyro samples of a signal
 
-GYRO_REC_DIR = 'gyro_results/Nexus';
+GYRO_REC_DIR = '../data/gyro_results/Nexus';
 
 global GYRO_FS;
 GYRO_FS = 200;
@@ -16,7 +16,9 @@ fs = NUM_DEVICES * GYRO_FS;
 
 REFINE_OFFSET = true;
 REFINE_TIMESKEW = true;
-USE_APPROX_OFFSET = false;
+USE_APPROX_OFFSET = true;
+
+reconstruction_func = @sp_eldar_impl;
 
 dim = 1; % Gyro dimension to use
 
@@ -68,17 +70,19 @@ else
 end
 
 if REFINE_OFFSET
-    offset = refine_offset(fs, offset, 10, NUM_DEVICES, gyro, orig_sig_ds);
+    offset = refine_offset(fs, offset, 10, NUM_DEVICES, gyro, orig_sig_ds, ...
+        reconstruction_func);
 end
 
 time_skew = offset_to_timeskew(offset, NUM_DEVICES, ref_signal_fs);
 trimmed = trim_signals(gyro, offset);
 
 if REFINE_TIMESKEW
-    time_skew = refine_timeskew(time_skew, NUM_DEVICES, trimmed, orig_sig_ds);
+    time_skew = refine_timeskew(time_skew, NUM_DEVICES, trimmed, ...
+        orig_sig_ds, reconstruction_func);
 end
 
-[reconstructed, reconstructed_fs] = eldar_reconstruction(GYRO_FS, trimmed, time_skew);
+[reconstructed, reconstructed_fs] = reconstruction_func(GYRO_FS, trimmed, time_skew);
 
 figure;
 fft_plot(reconstructed, reconstructed_fs);
