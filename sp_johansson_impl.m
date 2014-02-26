@@ -42,7 +42,6 @@ r = tausI-TQ*(0:K-1);
 r = r.';
 w_o = w_c*pi*TQ;
 hJ = zeros(K,LF);
-C = zeros(1,LF);
 Nt = (LF-1)/2;
 for i = 1:K
     C = -2*sin(w_o*(n-r(1+(mod(i-1-n,K)))'))./(pi*(n-r(1+(mod(i-1-n,K)))'));

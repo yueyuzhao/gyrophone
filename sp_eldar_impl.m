@@ -22,7 +22,7 @@ capT = K*TQ; % the full sampling period - of all samplers
 M = capT./T;
 ML = length(input{1}); % number of slices
 
-taus = time_skew / T_inp * capT; % ADC delays in seconds
+taus = time_skew / (T_inp * capT); % ADC delays in seconds
 tausI = sort([taus(1) taus(2)]);
 tauI = zeros(K,ML);
 
@@ -69,5 +69,5 @@ for p = 1:N
     y(p,:) = y1(1+delay:M(p):end-delay);
 end
 
-output = sum(real(y),1);
+output = sum(real(y),1)';
 end

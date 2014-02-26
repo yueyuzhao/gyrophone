@@ -21,7 +21,13 @@ K = 0.5*lcm(2*T(1), 2*T(2))/TQ; % number of samples in recurrent period
 K = 0.5*lcm(2*K, 2*T(3))/TQ;
 capT = K*TQ; % the full sampling period - of all samplers
 M = capT./T;
+capM = lcm(M(1), M(2));
+capM = lcm(capM, M(3));
 ML = min(cellfun('length', input)); % number of slices
+
+excess = ceil((K-1)/capM);
+maxf = K/(excess*capM+1);
+K1 = K/maxf;
 
 taus = time_skew / T_inp * capT; % ADC delays in seconds
 tausI = sort([taus(1) taus(2) taus(3)]);
@@ -37,7 +43,7 @@ for p = 1:N
     y1 = upsample(x1,K);
     
     % length of LF should be Multiple of LCM{M(p)}*2*K
-    LFE = M(p)*lcm(M(1),M(2))*2*K+1;
+    LFE = M(p)*capM*2*K1+1;
     nE = -(LFE-1)/2:1:(LFE-1)/2;
     h = sinc((nE/K)-(taus(p)/T(p))).*kaiser_mine1(LFE,3,-K*(taus(p)/T(p)));
     
@@ -70,5 +76,5 @@ for p = 1:N
     y(p,:) = y1(1+delay:M(p):end-delay);
 end
 
-output = sum(real(y),1);
+output = sum(real(y),1)';
 end
