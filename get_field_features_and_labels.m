@@ -27,6 +27,7 @@ function [feature_matrix, labels] = ...
         filtered_db = filterdb(db, field_name, unique_field_values{k});
         
         % extract features for all speaker samples
+%         func = @calc_stft;
         func = @calc_stft;
         [features, num_of_success] = extract_features(filtered_db, func);
         

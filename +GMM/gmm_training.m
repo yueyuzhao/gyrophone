@@ -13,7 +13,7 @@ function [mu_train, sigma_train, c_train] = ...
     
     for k = 1:NUM_OF_UNIQUE_LABELS
         t = whos('unique_labels');
-        if strcmp(t.class, 'double')
+        if ~strcmp(t.class, 'cell')
             mask = labels == unique_labels(k);
         else
             mask = strcmp(labels, unique_labels{k});

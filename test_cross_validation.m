@@ -2,7 +2,7 @@ function correct_rate = test_cross_validation(input_dir, label_ind, ...
     features_func, fn_filter)
 
 	USE_CACHE = false;
-    USE_DTW = true;
+    USE_DTW = false;
 
 	if USE_CACHE
 		load('features_and_labels', 'features', 'labels');
@@ -12,7 +12,9 @@ function correct_rate = test_cross_validation(input_dir, label_ind, ...
 	    save('features_and_labels', 'features', 'labels');
     end
     
-    cp = cvpartition(labels, 'k', 20);
+    cp = cvpartition(labels, 'leaveout');
+    labels = nominal(labels);
+    order = unique(labels);
     
     if ~USE_DTW
         features_mat = [features.mfcc.Mean' features.mfcc.Std' features.mfcc_delta.Mean' ...
@@ -24,9 +26,18 @@ function correct_rate = test_cross_validation(input_dir, label_ind, ...
     
         svm_classf = @(xtrain, ytrain, xtest)(multisvm(xtrain, ytrain, xtest, 'tolkkt', 1e-2, 'kktviolationlevel', 0.1));
         svm_mcr = crossval('mcr', features_mat, labels, 'predfun', svm_classf, 'partition', cp);
-
+            
+        conf_func = @(xtrain, ytrain, xtest, ytest) confusionmat(ytest, ...
+                    svm_classf(xtrain, ytrain, xtest), 'order', order);
+        svm_cnf = crossval(conf_func, features_mat, labels, 'partition', cp);
+        svm_cnf = reshape(sum(svm_cnf),length(order),length(order))
+        
         gmm_classf = @(xtrain, ytrain, xtest)(GMM.gmm_classification_test(xtrain', ytrain, xtest'));
         gmm_mcr = crossval('mcr', features_mat, labels, 'predfun', gmm_classf, 'partition', cp);
+        conf_func = @(xtrain, ytrain, xtest, ytest) confusionmat(ytest, ...
+                    gmm_classf(xtrain, ytrain, xtest), 'order', order);
+        gmm_cnf = crossval(conf_func, features_mat, labels, 'partition', cp);
+        gmm_cnf = reshape(sum(gmm_cnf),length(order),length(order))
         
         correct_rate = [1-svm_mcr 1-gmm_mcr];
     end
@@ -35,6 +46,11 @@ function correct_rate = test_cross_validation(input_dir, label_ind, ...
         dtw_classf = @(xtrain, ytrain, xtest)(dtw_classify(xtrain, ytrain, xtest));
         dtw_mcr = crossval('mcr', features, labels, 'predfun', dtw_classf, 'partition', cp);
         correct_rate = 1 - dtw_mcr;
+        
+        conf_func = @(xtrain, ytrain, xtest, ytest) confusionmat(ytest, ...
+                    dtw_classf(xtrain, ytrain, xtest), 'order', order);
+        dtw_cnf = crossval(conf_func, features, labels, 'partition', cp);
+        dtw_cnf = reshape(sum(dtw_cnf),length(order),length(order))
     end
 end
 

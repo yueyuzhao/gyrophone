@@ -12,11 +12,15 @@ function class = dtw_classify_sample(sample, train_data, train_labels)
     d = zeros(length(u), 1);
     
     for i = 1:N
-        ind = strcmp(u, train_labels{i});
+        if strcmp(t.class, 'nominal')
+            ind = u == train_labels(i);
+        else
+            ind = strcmp(u, train_labels{i});
+        end
         d(ind) = d(ind) + get_dtw_distance(sample, train_data{i});
     end
     
-    [min_d, class] = min(d);
+    [~, class] = min(d);
     class = u(class);
     
     t = whos('u');

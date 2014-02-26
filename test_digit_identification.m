@@ -1,8 +1,9 @@
 function correct_rate = test_digit_identification
     % Test speaker identification with TIDIGITS
     USE_CACHE = false;
-    USE_GMM = true;
-    USE_DTW = false;
+    
+    USE_GMM = false;
+    USE_DTW = true;
     USE_MULTISVM = false;
     USE_BINARYSVM = false;
     
@@ -15,8 +16,8 @@ function correct_rate = test_digit_identification
         % Filter single digit entries
         db = filterdb(db, 'digit', '[1-9OZ][AB]');
 
-        db = filterdb(db, 'device', '0094e779d7d1841f');
-%         db = filterdb(db, 'device', '00a697fa469633a5');
+%         db = filterdb(db, 'device', '0094e779d7d1841f');
+        db = filterdb(db, 'device', '00a697fa469633a5');
         db = filterdb(db, 'type', 'MAN');
         
         display('Feature extraction...');
@@ -31,26 +32,22 @@ function correct_rate = test_digit_identification
     test_labels = labels(cp.test);
     
     if USE_GMM || USE_MULTISVM || USE_BINARYSVM
-        train_features = features(:, cp.training);
-        test_features = features(:, cp.test); 
+        train_features = cell2mat(features(cp.training));
+        test_features = cell2mat(features(cp.test)); 
     end
     
     if USE_GMM
-        NUM_OF_GAUSSIANS = 10;
-        NUM_OF_ITERATIONS = 20;
-        [mu_train, sigma_train, c_train] = ...
-            GMM.gmm_training(train_features, train_labels, NUM_OF_GAUSSIANS, ...
-                             NUM_OF_ITERATIONS);
-
-        class = GMM.gmm_classification(test_features, mu_train, sigma_train, c_train);
+        class = GMM.gmm_classification2(train_features, train_labels, test_features);
     end
     
     if USE_MULTISVM
-        class = multisvm(train_features', train_labels, test_features');
+        class = multisvm(train_features', train_labels, test_features', ...
+            'tolkkt', 1e-2, 'kktviolationlevel', 0.1);
     end
     
     if USE_BINARYSVM
-        s = svmtrain(train_features', train_labels, 'tolkkt', 1e-2, 'kktviolationlevel', 0.1);
+        s = svmtrain(train_features', train_labels, ...
+            'tolkkt', 1e-2, 'kktviolationlevel', 0.1);
         class = svmclassify(s, test_features');
     end
 
@@ -67,11 +64,12 @@ function correct_rate = test_digit_identification
             progressbar(i/length(test_labels));
         end
     end
-    
-    save tidigits_class;
 
-    u = unique(train_labels);
-    class = u(class);
+    if USE_BINARYSVM
+        u = unique(train_labels);
+        class = u(class);
+    end
+    
     correct = class == test_labels;
     correct_rate = sum(correct)/length(correct);
     display(correct_rate);

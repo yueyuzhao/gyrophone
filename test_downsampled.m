@@ -12,6 +12,8 @@ USE_ORIGINAL_TIMESKEW = true;
 REFINE_OFFSET = false;
 REFINE_TIMESKEW = false;
 
+reconstruction_func = @sp_eldar_impl_n3;
+
 original_ds = resample(original, GYRO_FS * NUM_DEVICES, original_fs);
 
 fs = GYRO_FS * NUM_DEVICES;
@@ -29,12 +31,13 @@ estimated_offset = zeros(1, NUM_DEVICES);
 % Generate random offsets
 % original_offset = gen_random_offset(100, NUM_DEVICES, original_fs);
 % original_offset = randi([1, 10], [1 NUM_DEVICES]);
-original_offset = [1 1 1];
+original_offset = ones(1, NUM_DEVICES);
 display(original_offset);
 
 T = 1/GYRO_FS;
 % original_timeskew = rand(1, NUM_DEVICES) * T;
 original_timeskew = [0 0.3 0.7] * T;
+original_timeskew = original_timeskew(1:NUM_DEVICES);
 display(original_timeskew);
 
 N0 = 0; % noise PSD
@@ -66,7 +69,8 @@ else
     if REFINE_OFFSET
         % find the shift in offset for which we get the 
         % maximum correlation with the original signal
-        offset = refine_offset(fs, offset, 10, NUM_DEVICES, gyro, original_ds);
+        offset = refine_offset(fs, offset, 10, NUM_DEVICES, gyro, ...
+            original_ds, reconstruction_func);
     end
 end
 
@@ -75,31 +79,28 @@ trimmed = trim_signals(gyro, offset);
 if USE_ORIGINAL_TIMESKEW
     time_skew = original_timeskew;
 else
-    time_skew = offset_to_timeskew(offset, NUM_DEVICES, fs);
+%     time_skew = offset_to_timeskew(offset, NUM_DEVICES, fs);
+    time_skew = original_timeskew + rand(size(original_timeskew)) * 1e-4;
     display(time_skew);    
     if REFINE_TIMESKEW
-        time_skew = refine_timeskew(time_skew, NUM_DEVICES, trimmed, original_ds);
+        time_skew = refine_timeskew(time_skew, NUM_DEVICES, trimmed, ...
+            original_ds, reconstruction_func);
     end
 end
 
 display(offset);
 display(time_skew);
-[reconstructed, reconstructed_fs] = sp_johansson_impl_n3(GYRO_FS, trimmed, time_skew);
+[reconstructed, reconstructed_fs] = reconstruction_func(GYRO_FS, trimmed, time_skew);
 
 figure;
 fft_plot(reconstructed, reconstructed_fs);
 title('Merged from recordings');
 playsound(reconstructed, fs);
 
-% figure;
-% plot(xcorr(reconstructed, original_ds));
-
-% lp = fir1(48, [0.2 0.95]);
-% filtered = filter(lp, 1, gyro_merged);
-% figure;
-% fft_plot(filtered, merged_fs);
-% title('Filtered');
-% playsound(filtered, merged_fs);
+minlen = min(length(reconstructed), length(original_ds));
+noise = real(fft(reconstructed(1:minlen)) - fft(original_ds(1:minlen)));
+signal_to_noise = snr(reconstructed, noise);
+display(signal_to_noise);
 
 end
 
