@@ -21,7 +21,13 @@ function plot_spectrums(to_plot, fs, flt)
     
     for k = 1:3
         figure;
-        % specgram(samples(:, k), 128, 120);
-        spectrogram(samples(:, k), hanning(NFFT), round(NFFT * 0.9), NFFT, fs);
+        spectrogram(samples(:, k), NFFT, round(NFFT*0.9), NFFT);
+        % Using AuditoryToolbox spectrogram
+%         spec = spectrogram(samples(:, k), NFFT, 2, 2);
+%         x = (0 : size(spec, 2) - 1) / fs;
+%         y = 0 : size(spec, 1) - 1;
+%         imagesc(x, y, spec);
+%         xlabel('Time [sec]');
+%         ylabel('Freq [Hz]');
     end;
 end
