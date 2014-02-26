@@ -4,4 +4,8 @@ function [Hpsd, A] = analyze_samples(samples, Fs)
     Hs = spectrum.welch;
     Hpsd = psd(Hs, samples, 'Fs', Fs);
     A = lpc(samples);
+    
+    if nargout < 1
+        plot(Hpsd);
+    end
 end
