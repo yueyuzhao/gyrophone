@@ -38,3 +38,5 @@ for j=1:size(TestSet,1)
     end
     result(j) = k;
 end
+
+result = u(result);
