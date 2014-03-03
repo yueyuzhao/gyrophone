@@ -8,7 +8,9 @@ fs = num_devices * gyro_fs;
 REFINE_TIMESKEW = false;
 USE_APPROX_OFFSET = false;
 
-reconstruction_func = @sp_eldar_impl;
+% reconstruction_func = @sp_eldar_impl;
+% reconstruction_func = @eldar_reconstruction;
+reconstruction_func = @simple_interleaving;
 
 dim = 1; % Gyro dimension to use
 
@@ -46,7 +48,9 @@ else
     display(offset);
 end
 
-time_skew = offset_to_timeskew([0 (fs/num_devices+1)], num_devices, fs);
+% time_skew = offset_to_timeskew([0 (fs/num_devices+1)], num_devices, fs);
+Tq = 1/fs;
+time_skew = [0 1] * Tq;
 trimmed = trim_signals(samples, offset);
 
 if REFINE_TIMESKEW
@@ -61,4 +65,10 @@ end
 % title('Merged from Gyro recordings');
 % playsound(reconstructed, reconstructed_fs);
 
+end
+
+function [output, fs] = simple_interleaving(gyro_fs, input, time_skew)
+    [~, index_mapping] = sort(time_skew);
+    output = interleave_vectors(input(index_mapping));
+    fs = gyro_fs * length(input);
 end

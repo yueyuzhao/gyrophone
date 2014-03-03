@@ -8,8 +8,8 @@ LABEL_IND = label_ind;
 USE_PCA = false;
 NUM_OF_COEFFS = 5;
 
-[train_obj, train_features] = get_files_and_mfcc_features(TRAIN_DIR, LABEL_IND);
-[test_obj, test_features] = get_files_and_mfcc_features(TEST_DIR, LABEL_IND);
+[train_obj, train_features] = get_files_and_mfcc_features(TRAIN_DIR, LABEL_IND, '*.wav');
+[test_obj, test_features] = get_files_and_mfcc_features(TEST_DIR, LABEL_IND, '*.wav');
 
 % Remove NaNs from cells
 %test_features.mfcc_delta.Std = remove_nans_from_cell(test_features.mfcc_delta.Std);
