@@ -1,4 +1,4 @@
-function [rec, rec_sr] = dtw_interpolation(samples, sr)
+function [output] = dtw_alignment(samples, sr)
 % Find minimum phase between samples using Dynamic Time Warping and
 % interpolate using a phase vocoder
 % samples - Samples array
@@ -41,7 +41,6 @@ D2x = pvsample(D{2}, D2i1-1, WINDOW - OVERLAP);
 d2x = istft(D2x, WINDOW, WINDOW, WINDOW - OVERLAP);
 
 % Warped version added to original target (have to fine-tune length)
-d2x = resize(d2x', length(samples{1}),1);
-rec = samples{1}+d2x;
-rec_sr = sr;
+% d2x = resize(d2x', length(samples{1}),1);
+output = {samples{1}, d2x'};
 end
