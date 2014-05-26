@@ -7,8 +7,8 @@ function correct_rate = test_with_dtw(label_ind)
     % that are taken as the label for that file
     LABEL_IND = label_ind;
     
-    [train_obj, train_features] = get_files_and_stft_features(TRAIN_DIR, LABEL_IND);
-    [test_obj, test_features] = get_files_and_stft_features(TEST_DIR, LABEL_IND);
+    [train_obj, train_features] = get_files_and_stft_features(TRAIN_DIR, LABEL_IND, '*.wav');
+    [test_obj, test_features] = get_files_and_stft_features(TEST_DIR, LABEL_IND, '*.wav');
     
     train_labels = get(train_obj, 'Label')';
     test_labels = get(test_obj, 'Label')';
