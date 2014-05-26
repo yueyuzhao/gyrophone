@@ -1,6 +1,6 @@
 function [time, freq] = time_analysis(samples, fs, window, overlap)
     DEFAULT_WINDOW = 128;
-    DEFAULT_OVERLAP = 0.5;
+    DEFAULT_OVERLAP = 0.75;
     
     if ~exist('window', 'var')
         window = DEFAULT_WINDOW;
