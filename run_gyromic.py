@@ -12,7 +12,7 @@ import os.path
 import datetime
 from optparse import OptionParser
 
-ADB_PATH = '~/Documents/Sookasa/adt-bundle-mac-x86_64/sdk/platform-tools/adb'
+ADB_PATH = os.path.join(os.environ['ANDROID_HOME'], 'platform-tools/adb')
 APP_NAME = 'seclab.GyroMic'
 ACTIVITY_NAME = '%s.GyroMic' % APP_NAME
 APP_PATH = 'App/bin/GyroMic-debug.apk'
